@@ -1,3 +1,285 @@
+我們用一個 **外送平台** 來舉例最直覺。
+
+場景：使用者下單餐點後，系統要處理付款、餐廳接單、外送員派單、通知、訂單狀態更新。
+
+---
+
+## 簡化版 Kafka 外送系統
+
+```mermaid
+flowchart TB
+
+User["使用者 App"] --> APIGW["API Gateway"]
+
+APIGW --> OrderSvc["Order Service<br/>建立訂單"]
+APIGW --> UserSvc["User Service<br/>使用者資料"]
+
+OrderSvc --> Kafka1["Kafka topic:<br/>order.created"]
+
+Kafka1 --> PaymentSvc["Payment Service<br/>付款處理"]
+Kafka1 --> RestaurantSvc["Restaurant Service<br/>通知餐廳接單"]
+Kafka1 --> DispatchSvc["Dispatch Service<br/>尋找外送員"]
+Kafka1 --> AnalyticsSvc["Analytics Service<br/>數據分析"]
+
+PaymentSvc --> Bank["外部金流系統"]
+PaymentSvc --> Kafka2["Kafka topic:<br/>payment.success / payment.failed"]
+
+RestaurantSvc --> Kafka3["Kafka topic:<br/>restaurant.accepted / restaurant.rejected"]
+
+DispatchSvc --> RiderSvc["Rider Service<br/>外送員狀態"]
+DispatchSvc --> Kafka4["Kafka topic:<br/>rider.assigned"]
+
+Kafka2 --> OrderSvc
+Kafka3 --> OrderSvc
+Kafka4 --> OrderSvc
+
+OrderSvc --> Kafka5["Kafka topic:<br/>order.status.updated"]
+
+Kafka5 --> NotificationSvc["Notification Service<br/>推播通知"]
+Kafka5 --> CustomerSupportSvc["Customer Support Service<br/>客服查詢"]
+Kafka5 --> AnalyticsSvc
+
+NotificationSvc --> Push["LINE / App Push / SMS"]
+
+OrderSvc --> OrderDB[("Order DB")]
+UserSvc --> UserDB[("User DB")]
+PaymentSvc --> PaymentDB[("Payment DB")]
+RestaurantSvc --> RestaurantDB[("Restaurant DB")]
+RiderSvc --> RiderDB[("Rider DB")]
+CustomerSupportSvc --> SupportDB[("Support DB")]
+AnalyticsSvc --> DataWarehouse[("Data Warehouse")]
+```
+
+---
+
+## Plain explanation
+
+使用者在外送 App 按下「送出訂單」。
+
+表面上只是點了一份便當。
+背後其實有很多事情同時發生：
+
+```text
+建立訂單
+處理付款
+通知餐廳
+尋找外送員
+更新訂單狀態
+通知使用者
+讓客服可以查詢
+記錄數據分析
+```
+
+如果不用 Kafka，`Order Service` 可能要直接呼叫所有服務：
+
+```text
+Order Service → Payment Service
+Order Service → Restaurant Service
+Order Service → Dispatch Service
+Order Service → Notification Service
+Order Service → Analytics Service
+```
+
+這樣會讓 `Order Service` 變很胖。
+它要知道付款怎麼做、餐廳怎麼接單、外送員怎麼派、通知怎麼發。
+
+系統會變難改。
+
+---
+
+## 加上 Kafka 後，流程變簡單
+
+`Order Service` 做完自己的事之後，只發出一個事件：
+
+```text
+order.created
+```
+
+意思是：
+
+```text
+有一筆新訂單建立了。
+```
+
+接下來，其他服務自己訂閱這個事件。
+
+```text
+Payment Service 看到 order.created → 去付款
+Restaurant Service 看到 order.created → 通知餐廳
+Dispatch Service 看到 order.created → 找外送員
+Analytics Service 看到 order.created → 記錄資料
+```
+
+`Order Service` 不需要知道誰會來讀這個事件。
+
+---
+
+## 一筆訂單的實際流程
+
+### Step 1：建立訂單
+
+```text
+User App → API Gateway → Order Service
+```
+
+`Order Service` 寫入 `Order DB`，然後送出：
+
+```text
+Kafka topic: order.created
+```
+
+---
+
+### Step 2：付款服務開始處理
+
+`Payment Service` 訂閱 `order.created`。
+
+它看到新訂單後，呼叫外部金流：
+
+```text
+Payment Service → Bank / Payment Gateway
+```
+
+付款成功後送出：
+
+```text
+payment.success
+```
+
+付款失敗則送出：
+
+```text
+payment.failed
+```
+
+---
+
+### Step 3：餐廳接單
+
+`Restaurant Service` 也訂閱 `order.created`。
+
+餐廳接受訂單後送出：
+
+```text
+restaurant.accepted
+```
+
+餐廳拒絕則送出：
+
+```text
+restaurant.rejected
+```
+
+---
+
+### Step 4：派外送員
+
+`Dispatch Service` 訂閱 `order.created`。
+
+它會查：
+
+```text
+哪些外送員在線？
+誰離餐廳最近？
+誰現在沒有單？
+```
+
+找到人後送出：
+
+```text
+rider.assigned
+```
+
+---
+
+### Step 5：訂單服務更新狀態
+
+`Order Service` 會接收這些事件：
+
+```text
+payment.success
+restaurant.accepted
+rider.assigned
+```
+
+當三件事都完成，就更新訂單狀態：
+
+```text
+order.status.updated = confirmed
+```
+
+---
+
+### Step 6：通知與客服同步
+
+`Notification Service` 訂閱 `order.status.updated`。
+
+它會通知使用者：
+
+```text
+你的訂單已成立
+餐廳正在準備
+外送員已接單
+```
+
+`Customer Support Service` 也訂閱同一個事件。
+
+所以客服可以即時看到：
+
+```text
+付款成功了嗎？
+餐廳接單了嗎？
+外送員是誰？
+目前送到哪裡？
+```
+
+---
+
+## Kafka 在這個系統裡的價值
+
+第一，**降低依賴**。
+`Order Service` 不需要直接認識所有服務。
+
+第二，**系統比較不容易一起壞掉**。
+如果 Analytics 暫時壞掉，訂單仍然可以成立。Analytics 修好後，再從 Kafka 把事件補回來。
+
+第三，**容易加新功能**。
+假設之後要加一個「詐騙訂單偵測服務」，不用大改原本系統。只要讓它訂閱：
+
+```text
+order.created
+payment.success
+rider.assigned
+```
+
+它就能開始分析。
+
+第四，**可以重播事件**。
+如果昨天派單演算法有 bug，可以把昨天的 `order.created` 事件重新跑一次，測試新的演算法會怎麼派單。
+
+---
+
+## 一句話理解
+
+在這個外送平台裡：
+
+```text
+微服務 = 各個部門
+Kafka = 即時事件公告欄
+```
+
+訂單部門只要公告：
+
+```text
+新訂單來了。
+```
+
+付款部門、餐廳部門、派單部門、通知部門各自去做自己的工作。
+
+這就是 Kafka 最核心的價值。
+
+
+---
 下面用一個現實世界很典型的大型系統來講：
 
 # 大型即時電商平台：訂單、付款、庫存、物流、推薦、客服、風控
