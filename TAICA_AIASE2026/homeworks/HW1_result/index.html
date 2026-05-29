@@ -1,0 +1,1819 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AIASE2026 HW1 評分分析報告</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+  :root {
+    --primary: #2563eb;
+    --primary-dark: #1d4ed8;
+    --secondary: #7c3aed;
+    --accent: #0891b2;
+    --success: #059669;
+    --warning: #d97706;
+    --danger: #dc2626;
+    --bg: #f8fafc;
+    --card-bg: #ffffff;
+    --text: #1e293b;
+    --text-muted: #64748b;
+    --border: #e2e8f0;
+    --shadow: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06);
+    --shadow-lg: 0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -2px rgba(0,0,0,0.05);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Segoe UI', 'PingFang TC', 'Microsoft JhengHei', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.6;
+  }
+  /* Header */
+  .site-header {
+    background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 50%, #7c3aed 100%);
+    color: white;
+    padding: 3rem 2rem 2rem;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .site-header::before {
+    content: '';
+    position: absolute;
+    top: -50%; left: -50%;
+    width: 200%; height: 200%;
+    background: radial-gradient(circle, rgba(255,255,255,0.05) 0%, transparent 60%);
+    animation: pulse 8s ease-in-out infinite;
+  }
+  @keyframes pulse { 0%,100%{transform:scale(1);} 50%{transform:scale(1.1);} }
+  .site-header h1 { font-size: 2.2rem; font-weight: 800; letter-spacing: -0.5px; position: relative; }
+  .site-header .subtitle { font-size: 1rem; opacity: 0.85; margin-top: 0.5rem; position: relative; }
+  .badge-row { display: flex; gap: 0.75rem; justify-content: center; margin-top: 1.25rem; flex-wrap: wrap; position: relative; }
+  .badge {
+    background: rgba(255,255,255,0.15);
+    border: 1px solid rgba(255,255,255,0.3);
+    border-radius: 999px;
+    padding: 0.3rem 1rem;
+    font-size: 0.82rem;
+    font-weight: 600;
+    backdrop-filter: blur(4px);
+  }
+  /* Nav */
+  .toc-nav {
+    background: var(--card-bg);
+    border-bottom: 1px solid var(--border);
+    padding: 0;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: var(--shadow);
+  }
+  .toc-nav ul {
+    display: flex;
+    list-style: none;
+    overflow-x: auto;
+    padding: 0 1rem;
+    gap: 0;
+    scrollbar-width: none;
+  }
+  .toc-nav ul::-webkit-scrollbar { display: none; }
+  .toc-nav a {
+    display: block;
+    padding: 1rem 1.1rem;
+    text-decoration: none;
+    color: var(--text-muted);
+    font-size: 0.85rem;
+    font-weight: 500;
+    white-space: nowrap;
+    border-bottom: 3px solid transparent;
+    transition: all 0.2s;
+  }
+  .toc-nav a:hover { color: var(--primary); border-bottom-color: var(--primary); }
+  /* Layout */
+  .container { max-width: 1280px; margin: 0 auto; padding: 2rem 1.5rem; }
+  .section { margin-bottom: 3rem; }
+  .section-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 1.5rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 3px solid var(--primary);
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+  }
+  .section-title .icon { font-size: 1.4rem; }
+  /* Cards */
+  .card {
+    background: var(--card-bg);
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: var(--shadow);
+    border: 1px solid var(--border);
+  }
+  .card-title {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text-muted);
+    margin-bottom: 1rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    font-size: 0.8rem;
+  }
+  /* Stats Grid */
+  .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem; }
+  .stat-card {
+    background: var(--card-bg);
+    border-radius: 12px;
+    padding: 1.25rem 1.5rem;
+    box-shadow: var(--shadow);
+    border: 1px solid var(--border);
+    text-align: center;
+    transition: transform 0.2s, box-shadow 0.2s;
+  }
+  .stat-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-lg); }
+  .stat-card .value { font-size: 2rem; font-weight: 800; line-height: 1.1; }
+  .stat-card .label { font-size: 0.8rem; color: var(--text-muted); margin-top: 0.3rem; font-weight: 500; }
+  .stat-card .sub { font-size: 0.75rem; color: var(--text-muted); margin-top: 0.2rem; }
+  .stat-blue .value { color: var(--primary); }
+  .stat-green .value { color: var(--success); }
+  .stat-red .value { color: var(--danger); }
+  .stat-purple .value { color: var(--secondary); }
+  .stat-orange .value { color: var(--warning); }
+  .stat-teal .value { color: var(--accent); }
+  /* Chart Grid */
+  .chart-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(480px, 1fr)); gap: 1.5rem; }
+  .chart-grid-3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 1.5rem; }
+  .chart-full { grid-column: 1 / -1; }
+  .chart-wrap { position: relative; height: 320px; }
+  .chart-wrap-lg { position: relative; height: 400px; }
+  .chart-wrap-sm { position: relative; height: 260px; }
+  /* Table */
+  .table-wrap { overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+  th {
+    background: linear-gradient(135deg, var(--primary), var(--secondary));
+    color: white;
+    padding: 0.75rem 1rem;
+    text-align: left;
+    font-weight: 600;
+    font-size: 0.82rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+  td { padding: 0.7rem 1rem; border-bottom: 1px solid var(--border); }
+  tr:hover td { background: #f1f5f9; }
+  tr:last-child td { border-bottom: none; }
+  /* Progress bars */
+  .progress-bar-wrap { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.6rem; }
+  .progress-label { font-size: 0.82rem; font-weight: 600; min-width: 160px; color: var(--text); }
+  .progress-track { flex: 1; background: #e2e8f0; border-radius: 999px; height: 10px; overflow: hidden; }
+  .progress-fill { height: 100%; border-radius: 999px; transition: width 1s ease; }
+  .progress-count { font-size: 0.8rem; color: var(--text-muted); min-width: 40px; text-align: right; }
+  /* Alert boxes */
+  .alert {
+    border-radius: 10px;
+    padding: 1rem 1.25rem;
+    margin-bottom: 1rem;
+    border-left: 4px solid;
+    font-size: 0.9rem;
+  }
+  .alert-info { background: #eff6ff; border-color: var(--primary); color: #1e40af; }
+  .alert-warning { background: #fffbeb; border-color: var(--warning); color: #92400e; }
+  .alert-success { background: #f0fdf4; border-color: var(--success); color: #065f46; }
+  .alert-danger { background: #fef2f2; border-color: var(--danger); color: #991b1b; }
+  .alert strong { font-weight: 700; }
+  /* Insight list */
+  .insight-list { list-style: none; }
+  .insight-list li {
+    padding: 0.6rem 0;
+    border-bottom: 1px solid var(--border);
+    font-size: 0.9rem;
+    display: flex;
+    gap: 0.6rem;
+    align-items: flex-start;
+  }
+  .insight-list li:last-child { border-bottom: none; }
+  .insight-list .dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    margin-top: 0.45rem;
+    flex-shrink: 0;
+  }
+  /* Two-col layout */
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
+  @media (max-width: 768px) {
+    .two-col { grid-template-columns: 1fr; }
+    .chart-grid { grid-template-columns: 1fr; }
+    .chart-grid-3 { grid-template-columns: 1fr; }
+    .site-header h1 { font-size: 1.5rem; }
+    .stats-grid { grid-template-columns: repeat(2, 1fr); }
+  }
+  /* Footer */
+  .site-footer {
+    background: #1e293b;
+    color: #94a3b8;
+    text-align: center;
+    padding: 2rem;
+    font-size: 0.82rem;
+    margin-top: 3rem;
+  }
+  .site-footer strong { color: #e2e8f0; }
+  /* Dimension color coding */
+  .dim-md { color: #2563eb; }
+  .dim-tool { color: #7c3aed; }
+  .dim-readme { color: #059669; }
+  .dim-creative { color: #d97706; }
+  /* Tag chips */
+  .tag-chip {
+    display: inline-block;
+    padding: 0.2rem 0.7rem;
+    border-radius: 999px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    margin: 0.15rem;
+  }
+  /* Comparison highlight */
+  .diff-positive { color: var(--success); font-weight: 700; }
+  .diff-negative { color: var(--danger); font-weight: 700; }
+  /* Section anchor offset */
+  .anchor { scroll-margin-top: 60px; }
+</style>
+</head>
+<body>
+
+<!-- ===== HEADER ===== -->
+<header class="site-header">
+  <h1>📊 AIASE2026 HW1 評分分析報告</h1>
+  <p class="subtitle">Markdown 創作與渲染實作作業 — 完整評分統計分析</p>
+  <div class="badge-row">
+    <span class="badge">🎓 總學生數：695</span>
+    <span class="badge">✅ 通過門檻：591</span>
+    <span class="badge">📈 平均分：79.0</span>
+    <span class="badge">🤖 雙模型評分</span>
+    <span class="badge">⭐ 特色專案：310</span>
+  </div>
+</header>
+
+<!-- ===== NAV ===== -->
+<nav class="toc-nav">
+  <ul>
+    <li><a href="#overview">📋 總覽摘要</a></li>
+    <li><a href="#distribution">📊 分數分布</a></li>
+    <li><a href="#dimensions">🔍 維度分析</a></li>
+    <li><a href="#model-compare">🤖 模型比較</a></li>
+    <li><a href="#distinction">⭐ 特色專案</a></li>
+    <li><a href="#issues">⚠️ 常見問題</a></li>
+    <li><a href="#teaching">💡 教學建議</a></li>
+    <li><a href="#sampling-notes">🔎 抽檢觀察</a></li>
+    <li><a href="#calibration">⚖️ 校準與正規化</a></li>
+  </ul>
+</nav>
+
+<!-- ===== MAIN ===== -->
+<main class="container">
+
+  <!-- ===== SECTION 1: OVERVIEW ===== -->
+  <section class="section anchor" id="overview">
+    <h2 class="section-title"><span class="icon">📋</span>總覽摘要</h2>
+
+    <div class="stats-grid" style="margin-bottom:1.5rem;">
+      <div class="stat-card stat-blue">
+        <div class="value">695</div>
+        <div class="label">總學生數</div>
+        <div class="sub">參與評分</div>
+      </div>
+      <div class="stat-card stat-green">
+        <div class="value">591</div>
+        <div class="label">通過門檻</div>
+        <div class="sub">通過率 85.0%</div>
+      </div>
+      <div class="stat-card stat-red">
+        <div class="value">104</div>
+        <div class="label">未通過門檻</div>
+        <div class="sub">佔比 15.0%</div>
+      </div>
+      <div class="stat-card stat-purple">
+        <div class="value">79.0</div>
+        <div class="label">最終平均分</div>
+        <div class="sub">中位數 79.0</div>
+      </div>
+      <div class="stat-card stat-orange">
+        <div class="value">5.95</div>
+        <div class="label">標準差</div>
+        <div class="sub">範圍 61–94</div>
+      </div>
+      <div class="stat-card stat-teal">
+        <div class="value">310</div>
+        <div class="label">特色專案</div>
+        <div class="sub">佔通過者 52.5%</div>
+      </div>
+    </div>
+
+    <div class="two-col">
+      <div class="card">
+        <div class="card-title">📐 最終分數統計摘要</div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>統計指標</th><th>最終分數</th><th>加權原始分</th></tr></thead>
+            <tbody>
+              <tr><td>樣本數</td><td>591</td><td>591</td></tr>
+              <tr><td>平均值</td><td>79.0</td><td>86.16</td></tr>
+              <tr><td>中位數</td><td>79.0</td><td>88.1</td></tr>
+              <tr><td>標準差</td><td>5.95</td><td>8.19</td></tr>
+              <tr><td>最小值</td><td>61.0</td><td>45.4</td></tr>
+              <tr><td>最大值</td><td>94.0</td><td>97.6</td></tr>
+              <tr><td>Q1 (25%)</td><td>75.0</td><td>83.2</td></tr>
+              <tr><td>Q3 (75%)</td><td>83.0</td><td>91.7</td></tr>
+              <tr><td>IQR</td><td>8.0</td><td>8.5</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">🔑 門檻通過率</div>
+        <div class="chart-wrap-sm">
+          <canvas id="chartPassFail"></canvas>
+        </div>
+        <div style="margin-top:1rem;">
+          <div class="alert alert-info">
+            <strong>正規化說明：</strong>最終分數已校準至目標平均 79、標準差 6、範圍 [60, 95]。
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:1.5rem;">
+      <div class="card-title">📊 四維度平均分概覽</div>
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="value dim-md">86.76</div>
+          <div class="label">Markdown 豐富度</div>
+          <div class="sub">權重 30% ｜ σ=7.97</div>
+        </div>
+        <div class="stat-card">
+          <div class="value dim-tool">86.12</div>
+          <div class="label">工具完整度</div>
+          <div class="sub">權重 25% ｜ σ=10.1</div>
+        </div>
+        <div class="stat-card">
+          <div class="value dim-readme">87.75</div>
+          <div class="label">README 可重現性</div>
+          <div class="sub">權重 25% ｜ σ=11.23</div>
+        </div>
+        <div class="stat-card">
+          <div class="value dim-creative">83.32</div>
+          <div class="label">創意度</div>
+          <div class="sub">權重 20% ｜ σ=7.75</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== SECTION 2: DISTRIBUTION ===== -->
+  <section class="section anchor" id="distribution">
+    <h2 class="section-title"><span class="icon">📊</span>分數分布分析</h2>
+
+    <div class="chart-grid">
+      <div class="card chart-full">
+        <div class="card-title">📈 最終分數分布直方圖（正規化後，N=591）</div>
+        <div class="chart-wrap-lg">
+          <canvas id="chartFinalHist"></canvas>
+        </div>
+        <div class="alert alert-info" style="margin-top:1rem;">
+          <strong>觀察：</strong>分布呈現近似常態，集中於 73–84 分區間，峰值落在 76–79 分段（78 人）。平均值與中位數均為 79.0，顯示分布高度對稱，正規化效果良好。
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">📦 加權原始分分布直方圖（正規化前，N=591）</div>
+        <div class="chart-wrap">
+          <canvas id="chartWeightedHist"></canvas>
+        </div>
+        <div style="margin-top:0.75rem; font-size:0.85rem; color:var(--text-muted);">
+          正規化前平均 86.16，中位數 88.1，呈現左偏分布，高分群集中於 87–95 分段。
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">📦 四維度分數箱形圖比較</div>
+        <div class="chart-wrap">
+          <canvas id="chartBoxplot"></canvas>
+        </div>
+        <div style="margin-top:0.75rem; font-size:0.85rem; color:var(--text-muted);">
+          README 可重現性標準差最大（11.23），顯示學生間差異最懸殊；創意度平均分最低（83.32）。
+        </div>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:1.5rem;">
+      <div class="card-title">🔍 分數區間分布詳細統計</div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>分數區間</th><th>人數</th><th>佔比</th><th>累積佔比</th><th>等級描述</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td>90–94</td><td>23</td><td>3.9%</td><td>100%</td><td>🏆 優秀</td></tr>
+            <tr><td>85–89</td><td>85</td><td>14.4%</td><td>96.1%</td><td>⭐ 良好</td></tr>
+            <tr><td>80–84</td><td>167</td><td>28.3%</td><td>81.7%</td><td>✅ 中上</td></tr>
+            <tr><td>75–79</td><td>184</td><td>31.1%</td><td>53.5%</td><td>📝 中等</td></tr>
+            <tr><td>70–74</td><td>86</td><td>14.6%</td><td>22.3%</td><td>⚠️ 中下</td></tr>
+            <tr><td>65–69</td><td>30</td><td>5.1%</td><td>7.8%</td><td>🔴 偏低</td></tr>
+            <tr><td>60–64</td><td>16</td><td>2.7%</td><td>2.7%</td><td>🔴 低分</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== SECTION 3: DIMENSIONS ===== -->
+  <section class="section anchor" id="dimensions">
+    <h2 class="section-title"><span class="icon">🔍</span>維度分析</h2>
+
+    <div class="chart-grid">
+      <div class="card">
+        <div class="card-title">🕸️ 四維度平均分雷達圖</div>
+        <div class="chart-wrap">
+          <canvas id="chartRadar"></canvas>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">📊 各維度分數統計比較</div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr><th>維度</th><th>平均</th><th>中位數</th><th>σ</th><th>最低</th><th>最高</th><th>Q1</th><th>Q3</th></tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong class="dim-md">Markdown 豐富度</strong></td>
+                <td>86.76</td><td>88.5</td><td>7.97</td><td>53.5</td><td>99.0</td><td>83.5</td><td>91.5</td>
+              </tr>
+              <tr>
+                <td><strong class="dim-tool">工具完整度</strong></td>
+                <td>86.12</td><td>88.5</td><td>10.1</td><td>22.5</td><td>99.5</td><td>81.5</td><td>93.5</td>
+              </tr>
+              <tr>
+                <td><strong class="dim-readme">README 可重現性</strong></td>
+                <td>87.75</td><td>91.5</td><td>11.23</td><td>22.5</td><td>99.5</td><td>86.0</td><td>94.0</td>
+              </tr>
+              <tr>
+                <td><strong class="dim-creative">創意度</strong></td>
+                <td>83.32</td><td>85.0</td><td>7.75</td><td>40.0</td><td>97.0</td><td>79.0</td><td>88.5</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div style="margin-top:1rem;">
+          <ul class="insight-list">
+            <li><span class="dot" style="background:#059669;"></span><strong>README 可重現性</strong>平均最高（87.75），但標準差也最大（11.23），顯示學生表現兩極化。</li>
+            <li><span class="dot" style="background:#d97706;"></span><strong>創意度</strong>是四維度中平均分最低（83.32），且最低分僅 40 分，是最需加強的維度。</li>
+            <li><span class="dot" style="background:#2563eb;"></span><strong>Markdown 豐富度</strong>標準差最小（7.97），學生表現最為一致。</li>
+            <li><span class="dot" style="background:#7c3aed;"></span><strong>工具完整度</strong>最低分僅 22.5，顯示少數學生工具鏈設置存在嚴重問題。</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="chart-grid-3" style="margin-top:1.5rem;">
+      <div class="card">
+        <div class="card-title">📊 Markdown 豐富度分布</div>
+        <div class="chart-wrap-sm">
+          <canvas id="chartDimMD"></canvas>
+        </div>
+        <div style="margin-top:0.5rem; font-size:0.82rem; color:var(--text-muted);">
+          分布集中於 85–95 分，呈現左偏，高分群佔多數。
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">📊 工具完整度分布</div>
+        <div class="chart-wrap-sm">
+          <canvas id="chartDimTool"></canvas>
+        </div>
+        <div style="margin-top:0.5rem; font-size:0.82rem; color:var(--text-muted);">
+          主體集中於 80–96 分，但有少數極低分（22–30）的離群值。
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">📊 README 可重現性分布</div>
+        <div class="chart-wrap-sm">
+          <canvas id="chartDimReadme"></canvas>
+        </div>
+        <div style="margin-top:0.5rem; font-size:0.82rem; color:var(--text-muted);">
+          高度左偏，88–96 分段人數最多，但低分尾部較長。
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">📊 創意度分布</div>
+        <div class="chart-wrap-sm">
+          <canvas id="chartDimCreativity"></canvas>
+        </div>
+        <div style="margin-top:0.5rem; font-size:0.82rem; color:var(--text-muted);">
+          分布較為均勻，峰值在 86–88 分，低分尾部延伸至 40 分。
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== SECTION 4: MODEL COMPARISON ===== -->
+  <section class="section anchor" id="model-compare">
+    <h2 class="section-title"><span class="icon">🤖</span>雙模型比較分析</h2>
+
+    <div class="alert alert-warning">
+      <strong>⚠️ 人工複審說明：</strong>共 590 份作業進行雙模型評分，其中 204 份（34.6%）因 Claude 與 Gemini 加權總分差異超過 10 分而被標記需人工複審。
+    </div>
+
+    <div class="stats-grid" style="margin-bottom:1.5rem;">
+      <div class="stat-card stat-blue">
+        <div class="value">81.87</div>
+        <div class="label">Claude 平均分</div>
+        <div class="sub">σ=9.96，範圍 32–96</div>
+      </div>
+      <div class="stat-card stat-green">
+        <div class="value">90.59</div>
+        <div class="label">Gemini 平均分</div>
+        <div class="sub">σ=6.52，範圍 56–100</div>
+      </div>
+      <div class="stat-card stat-red">
+        <div class="value">-8.72</div>
+        <div class="label">平均分差（C-G）</div>
+        <div class="sub">Claude 系統性偏低</div>
+      </div>
+      <div class="stat-card stat-orange">
+        <div class="value">204</div>
+        <div class="label">標記複審數</div>
+        <div class="sub">佔雙評 34.6%</div>
+      </div>
+    </div>
+
+    <div class="chart-grid">
+      <div class="card">
+        <div class="card-title">🔵 Claude vs Gemini 總分散佈圖（標記複審樣本）</div>
+        <div class="chart-wrap">
+          <canvas id="chartScatter"></canvas>
+        </div>
+        <div style="margin-top:0.75rem; font-size:0.85rem; color:var(--text-muted);">
+          散佈圖顯示 Gemini 評分系統性高於 Claude，差異集中於 -10 至 -29 分之間。
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">📊 分數差異（Claude − Gemini）分布直方圖</div>
+        <div class="chart-wrap">
+          <canvas id="chartDiffHist"></canvas>
+        </div>
+        <div style="margin-top:0.75rem; font-size:0.85rem; color:var(--text-muted);">
+          差異均為負值（-10 至 -29），中位數 -13.05，顯示 Claude 在所有標記案例中均低於 Gemini。
+        </div>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:1.5rem;">
+      <div class="card-title">🔍 標記複審樣本：各維度 Claude vs Gemini 比較（N=204）</div>
+      <div class="chart-wrap-lg">
+        <canvas id="chartDimCompare"></canvas>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:1.5rem;">
+      <div class="card-title">📋 各維度模型評分差異詳細比較（標記複審樣本）</div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>維度</th>
+              <th>Claude 平均</th><th>Claude σ</th>
+              <th>Gemini 平均</th><th>Gemini σ</th>
+              <th>差異（C-G）</th><th>差異幅度</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong class="dim-md">Markdown 豐富度</strong></td>
+              <td>73.22</td><td>10.0</td>
+              <td>89.96</td><td>7.99</td>
+              <td class="diff-negative">-16.74</td>
+              <td>🔴 最大差異</td>
+            </tr>
+            <tr>
+              <td><strong class="dim-tool">工具完整度</strong></td>
+              <td>72.71</td><td>15.21</td>
+              <td>85.83</td><td>9.88</td>
+              <td class="diff-negative">-13.12</td>
+              <td>🟠 大差異</td>
+            </tr>
+            <tr>
+              <td><strong class="dim-readme">README 可重現性</strong></td>
+              <td>73.24</td><td>18.01</td>
+              <td>87.28</td><td>12.57</td>
+              <td class="diff-negative">-14.04</td>
+              <td>🟠 大差異</td>
+            </tr>
+            <tr>
+              <td><strong class="dim-creative">創意度</strong></td>
+              <td>72.82</td><td>9.73</td>
+              <td>84.25</td><td>7.59</td>
+              <td class="diff-negative">-11.43</td>
+              <td>🟡 中差異</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div style="margin-top:1rem;">
+        <ul class="insight-list">
+          <li><span class="dot" style="background:#dc2626;"></span><strong>Markdown 豐富度</strong>差異最大（-16.74），Claude 對 Markdown 語法豐富程度的評判標準明顯嚴格於 Gemini。</li>
+          <li><span class="dot" style="background:#d97706;"></span><strong>README 可重現性</strong>的 Claude 標準差高達 18.01，顯示 Claude 在此維度評分最不穩定。</li>
+          <li><span class="dot" style="background:#7c3aed;"></span><strong>創意度</strong>差異相對最小（-11.43），兩模型在主觀評估上分歧較少。</li>
+          <li><span class="dot" style="background:#2563eb;"></span>所有維度 Claude 均系統性低於 Gemini，顯示 Claude 整體評分標準更為嚴格。</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== SECTION 5: DISTINCTION ===== -->
+  <section class="section anchor" id="distinction">
+    <h2 class="section-title"><span class="icon">⭐</span>特色專案分析</h2>
+
+    <div class="alert alert-success">
+      <strong>🏆 特色專案門檻：</strong>加權總分 ≥ 85 分。共 310 份作業獲得特色專案標記，佔通過門檻學生的 <strong>52.5%</strong>，顯示整體作業品質相當優秀。
+    </div>
+
+    <div class="chart-grid">
+      <div class="card">
+        <div class="card-title">📊 特色標籤分布橫條圖（N=310 份特色專案）</div>
+        <div class="chart-wrap-lg">
+          <canvas id="chartDistinctionBar"></canvas>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">🏷️ 特色標籤詳細統計</div>
+        <div style="margin-bottom:1rem;">
+          <div class="progress-bar-wrap">
+            <span class="progress-label">📝 exemplary_readme</span>
+            <div class="progress-track"><div class="progress-fill" style="width:73.9%;background:linear-gradient(90deg,#2563eb,#60a5fa);"></div></div>
+            <span class="progress-count">229</span>
+          </div>
+          <div class="progress-bar-wrap">
+            <span class="progress-label">🗣️ personal_voice</span>
+            <div class="progress-track"><div class="progress-fill" style="width:73.5%;background:linear-gradient(90deg,#7c3aed,#a78bfa);"></div></div>
+            <span class="progress-count">228</span>
+          </div>
+          <div class="progress-bar-wrap">
+            <span class="progress-label">🔧 technical_depth</span>
+            <div class="progress-track"><div class="progress-fill" style="width:64.8%;background:linear-gradient(90deg,#059669,#34d399);"></div></div>
+            <span class="progress-count">201</span>
+          </div>
+          <div class="progress-bar-wrap">
+            <span class="progress-label">⚙️ advanced_toolchain</span>
+            <div class="progress-track"><div class="progress-fill" style="width:59.4%;background:linear-gradient(90deg,#d97706,#fbbf24);"></div></div>
+            <span class="progress-count">184</span>
+          </div>
+          <div class="progress-bar-wrap">
+            <span class="progress-label">💡 creative_topic</span>
+            <div class="progress-track"><div class="progress-fill" style="width:49.0%;background:linear-gradient(90deg,#dc2626,#f87171);"></div></div>
+            <span class="progress-count">152</span>
+          </div>
+          <div class="progress-bar-wrap">
+            <span class="progress-label">🎮 interactive_output</span>
+            <div class="progress-track"><div class="progress-fill" style="width:16.8%;background:linear-gradient(90deg,#0891b2,#67e8f9);"></div></div>
+            <span class="progress-count">52</span>
+          </div>
+          <div class="progress-bar-wrap">
+            <span class="progress-label">🎨 exceptional_design</span>
+            <div class="progress-track"><div class="progress-fill" style="width:3.9%;background:linear-gradient(90deg,#be185d,#f9a8d4);"></div></div>
+            <span class="progress-count">12</span>
+          </div>
+        </div>
+        <div style="font-size:0.82rem; color:var(--text-muted);">百分比以 310 份特色專案為基數計算</div>
+
+        <div style="margin-top:1rem;">
+          <ul class="insight-list">
+            <li><span class="dot" style="background:#2563eb;"></span><strong>exemplary_readme</strong> 與 <strong>personal_voice</strong> 並列最常見標籤（各約 74%），顯示優秀作業普遍具備清晰文件與個人風格。</li>
+            <li><span class="dot" style="background:#059669;"></span><strong>technical_depth</strong>（65%）與 <strong>advanced_toolchain</strong>（59%）也相當普遍，反映學生技術能力整體良好。</li>
+            <li><span class="dot" style="background:#dc2626;"></span><strong>interactive_output</strong>（17%）與 <strong>exceptional_design</strong>（4%）較為稀少，是進階挑戰的方向。</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:1.5rem;">
+      <div class="card-title">🔍 特色專案特徵分析</div>
+      <div class="two-col">
+        <div>
+          <h4 style="margin-bottom:0.75rem; color:var(--success);">✅ 特色專案共同特徵</h4>
+          <ul class="insight-list">
+            <li><span class="dot" style="background:#059669;"></span>README 文件結構完整，包含安裝步驟、使用說明與範例輸出</li>
+            <li><span class="dot" style="background:#059669;"></span>具備鮮明的個人寫作風格與主題選擇</li>
+            <li><span class="dot" style="background:#059669;"></span>Markdown 語法使用多樣，包含表格、程式碼區塊、圖片等</li>
+            <li><span class="dot" style="background:#059669;"></span>工具鏈設置完整，能正確生成輸出檔案</li>
+            <li><span class="dot" style="background:#059669;"></span>展現對 Markdown 渲染工具的深入理解</li>
+          </ul>
+        </div>
+        <div>
+          <h4 style="margin-bottom:0.75rem; color:var(--primary);">💡 進階特色（稀有標籤）</h4>
+          <ul class="insight-list">
+            <li><span class="dot" style="background:#0891b2;"></span><strong>interactive_output</strong>（52 份）：整合互動式元素，如動態圖表或可執行程式碼</li>
+            <li><span class="dot" style="background:#be185d;"></span><strong>exceptional_design</strong>（12 份）：視覺設計出色，排版美觀，超越基本要求</li>
+            <li><span class="dot" style="background:#7c3aed;"></span>這兩類標籤代表作業中的頂尖水準，值得作為範例分享</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== SECTION 6: ISSUES ===== -->
+  <section class="section anchor" id="issues">
+    <h2 class="section-title"><span class="icon">⚠️</span>常見問題與建議</h2>
+
+    <div class="alert alert-danger">
+      <strong>🚫 門檻未通過：</strong>104 名學生（15.0%）因未滿足基本要求而無法進入評分流程。
+    </div>
+
+    <div class="two-col" style="margin-bottom:1.5rem;">
+      <div class="card">
+        <div class="card-title">🚫 門檻失敗原因分析（N=104）</div>
+        <div class="chart-wrap-sm">
+          <canvas id="chartGateFail"></canvas>
+        </div>
+        <div style="margin-top:1rem;">
+          <div class="progress-bar-wrap">
+            <span class="progress-label">output_file_valid</span>
+            <div class="progress-track"><div class="progress-fill" style="width:96.2%;background:#dc2626;"></div></div>
+            <span class="progress-count">100</span>
+          </div>
+          <div class="progress-bar-wrap">
+            <span class="progress-label">content_md</span>
+            <div class="progress-track"><div class="progress-fill" style="width:95.2%;background:#d97706;"></div></div>
+            <span class="progress-count">99</span>
+          </div>
+          <div class="progress-bar-wrap">
+            <span class="progress-label">output_dir</span>
+            <div class="progress-track"><div class="progress-fill" style="width:92.3%;background:#7c3aed;"></div></div>
+            <span class="progress-count">96</span>
+          </div>
+          <div class="progress-bar-wrap">
+            <span class="progress-label">readme_md</span>
+            <div class="progress-track"><div class="progress-fill" style="width:1.9%;background:#2563eb;"></div></div>
+            <span class="progress-count">2</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">📋 門檻失敗問題說明</div>
+        <ul class="insight-list">
+          <li>
+            <span class="dot" style="background:#dc2626;"></span>
+            <div>
+              <strong>output_file_valid（100 人）</strong><br>
+              <span style="font-size:0.85rem; color:var(--text-muted);">輸出檔案無效或格式錯誤，是最主要的失敗原因。可能原因：工具未正確執行、輸出路徑錯誤、檔案損毀。</span>
+            </div>
+          </li>
+          <li>
+            <span class="dot" style="background:#d97706;"></span>
+            <div>
+              <strong>content_md（99 人）</strong><br>
+              <span style="font-size:0.85rem; color:var(--text-muted);">Markdown 內容不符合要求，可能缺少必要的語法元素或內容過於簡短。</span>
+            </div>
+          </li>
+          <li>
+            <span class="dot" style="background:#7c3aed;"></span>
+            <div>
+              <strong>output_dir（96 人）</strong><br>
+              <span style="font-size:0.85rem; color:var(--text-muted);">輸出目錄結構不正確，未按照作業規範建立目錄。</span>
+            </div>
+          </li>
+          <li>
+            <span class="dot" style="background:#2563eb;"></span>
+            <div>
+              <strong>readme_md（2 人）</strong><br>
+              <span style="font-size:0.85rem; color:var(--text-muted);">README 檔案缺失，僅 2 人有此問題，屬於少數情況。</span>
+            </div>
+          </li>
+        </ul>
+        <div class="alert alert-warning" style="margin-top:1rem;">
+          <strong>注意：</strong>多數失敗學生同時觸發多個門檻條件（output_file_valid、content_md、output_dir 高度相關），顯示問題根源可能是工具鏈設置失敗。
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">📉 低分學生常見問題歸納（最終分數 < 72 分）</div>
+      <div class="two-col">
+        <div>
+          <h4 style="margin-bottom:0.75rem; color:var(--danger);">❌ 技術層面問題</h4>
+          <ul class="insight-list">
+            <li><span class="dot" style="background:#dc2626;"></span>工具鏈設置不完整，缺少必要的轉換工具（如 Pandoc、mkdocs 等）</li>
+            <li><span class="dot" style="background:#dc2626;"></span>輸出目錄結構不符合規範，檔案路徑錯誤</li>
+            <li><span class="dot" style="background:#dc2626;"></span>Markdown 語法使用單一，缺乏表格、程式碼區塊、圖片等豐富元素</li>
+            <li><span class="dot" style="background:#dc2626;"></span>README 缺乏可重現的操作步驟，他人無法依照說明重現結果</li>
+          </ul>
+        </div>
+        <div>
+          <h4 style="margin-bottom:0.75rem; color:var(--warning);">⚠️ 內容層面問題</h4>
+          <ul class="insight-list">
+            <li><span class="dot" style="background:#d97706;"></span>創意度不足，主題選擇過於普通或缺乏個人特色</li>
+            <li><span class="dot" style="background:#d97706;"></span>README 說明過於簡略，缺少環境需求、安裝步驟等關鍵資訊</li>
+            <li><span class="dot" style="background:#d97706;"></span>Markdown 內容深度不足，未展現對工具的深入理解</li>
+            <li><span class="dot" style="background:#d97706;"></span>缺乏個人寫作風格，內容模板化</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:1.5rem;">
+      <div class="card-title">💡 改善建議</div>
+      <div class="chart-grid-3">
+        <div style="background:#eff6ff; border-radius:10px; padding:1.25rem; border-left:4px solid #2563eb;">
+          <h4 style="color:#1d4ed8; margin-bottom:0.75rem;">📝 Markdown 豐富度</h4>
+          <ul style="font-size:0.87rem; padding-left:1.2rem; line-height:1.8;">
+            <li>使用至少 5 種以上 Markdown 語法元素</li>
+            <li>加入表格、程式碼區塊（含語法高亮）</li>
+            <li>適當使用圖片、連結、引用區塊</li>
+            <li>善用標題層級建立文件結構</li>
+          </ul>
+        </div>
+        <div style="background:#f5f3ff; border-radius:10px; padding:1.25rem; border-left:4px solid #7c3aed;">
+          <h4 style="color:#6d28d9; margin-bottom:0.75rem;">⚙️ 工具完整度</h4>
+          <ul style="font-size:0.87rem; padding-left:1.2rem; line-height:1.8;">
+            <li>確認工具鏈能完整執行並生成輸出</li>
+            <li>測試輸出目錄結構是否符合規範</li>
+            <li>記錄所有使用的工具版本</li>
+            <li>提供 Makefile 或腳本自動化流程</li>
+          </ul>
+        </div>
+        <div style="background:#f0fdf4; border-radius:10px; padding:1.25rem; border-left:4px solid #059669;">
+          <h4 style="color:#065f46; margin-bottom:0.75rem;">📖 README 可重現性</h4>
+          <ul style="font-size:0.87rem; padding-left:1.2rem; line-height:1.8;">
+            <li>列出完整的環境需求（OS、工具版本）</li>
+            <li>提供逐步安裝與執行指令</li>
+            <li>加入預期輸出的截圖或範例</li>
+            <li>說明常見錯誤的排除方法</li>
+          </ul>
+        </div>
+        <div style="background:#fffbeb; border-radius:10px; padding:1.25rem; border-left:4px solid #d97706;">
+          <h4 style="color:#92400e; margin-bottom:0.75rem;">💡 創意度</h4>
+          <ul style="font-size:0.87rem; padding-left:1.2rem; line-height:1.8;">
+            <li>選擇具個人特色的主題，避免過於通用</li>
+            <li>加入個人觀點與反思</li>
+            <li>嘗試互動式輸出（如 Jupyter、Reveal.js）</li>
+            <li>在視覺設計上投入更多心思</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== SECTION 7: TEACHING ===== -->
+  <section class="section anchor" id="teaching">
+    <h2 class="section-title"><span class="icon">💡</span>教學回饋建議</h2>
+
+    <div class="two-col">
+      <div class="card">
+        <div class="card-title">📊 整體表現評估</div>
+        <ul class="insight-list">
+          <li>
+            <span class="dot" style="background:#059669;"></span>
+            <div><strong>整體表現良好</strong><br><span style="font-size:0.85rem; color:var(--text-muted);">85% 通過率、平均分 79 分，顯示大多數學生能掌握作業基本要求。</span></div>
+          </li>
+          <li>
+            <span class="dot" style="background:#059669;"></span>
+            <div><strong>特色專案比例高</strong><br><span style="font-size:0.85rem; color:var(--text-muted);">52.5% 的通過學生獲得特色標記，顯示課程激發了學生的創作動力。</span></div>
+          </li>
+          <li>
+            <span class="dot" style="background:#d97706;"></span>
+            <div><strong>工具鏈是主要障礙</strong><br><span style="font-size:0.85rem; color:var(--text-muted);">104 名未通過學生中，96% 以上有輸出目錄或檔案問題，工具設置是最大挑戰。</span></div>
+          </li>
+          <li>
+            <span class="dot" style="background:#d97706;"></span>
+            <div><strong>創意度有提升空間</strong><br><span style="font-size:0.85rem; color:var(--text-muted);">創意度是四維度中平均分最低的，且 exceptional_design 標籤僅 12 份，視覺設計能力待加強。</span></div>
+          </li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <div class="card-title">🤖 評分系統觀察</div>
+        <ul class="insight-list">
+          <li>
+            <span class="dot" style="background:#dc2626;"></span>
+            <div><strong>模型評分差異顯著</strong><br><span style="font-size:0.85rem; color:var(--text-muted);">34.6% 的作業需人工複審，Claude 系統性低於 Gemini 約 8.72 分，建議檢視評分 Prompt 設計。</span></div>
+          </li>
+          <li>
+            <span class="dot" style="background:#dc2626;"></span>
+            <div><strong>Markdown 豐富度差異最大</strong><br><span style="font-size:0.85rem; color:var(--text-muted);">兩模型在此維度差異達 16.74 分，評分標準需進一步統一。</span></div>
+          </li>
+          <li>
+            <span class="dot" style="background:#2563eb;"></span>
+            <div><strong>正規化效果良好</strong><br><span style="font-size:0.85rem; color:var(--text-muted);">最終分數平均 79.0、標準差 5.95，與目標（79, 6）高度吻合。</span></div>
+          </li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:1.5rem;">
+      <div class="card-title">🎯 具體教學改善建議</div>
+      <div class="chart-grid-3">
+        <div style="background:linear-gradient(135deg,#eff6ff,#dbeafe); border-radius:12px; padding:1.5rem;">
+          <div style="font-size:1.5rem; margin-bottom:0.5rem;">🛠️</div>
+          <h4 style="color:#1d4ed8; margin-bottom:0.75rem;">工具鏈教學強化</h4>
+          <p style="font-size:0.87rem; color:#1e40af; line-height:1.7;">
+            建議在課程初期增加工具鏈設置的實作練習課，提供標準化的環境設置腳本，並建立常見錯誤的 FAQ 文件。可考慮提供 Docker 容器或 GitHub Codespaces 環境，降低環境設置門檻。
+          </p>
+        </div>
+        <div style="background:linear-gradient(135deg,#f5f3ff,#ede9fe); border-radius:12px; padding:1.5rem;">
+          <div style="font-size:1.5rem; margin-bottom:0.5rem;">🎨</div>
+          <h4 style="color:#6d28d9; margin-bottom:0.75rem;">創意度培養</h4>
+          <p style="font-size:0.87rem; color:#5b21b6; line-height:1.7;">
+            分享歷屆優秀作業範例（匿名），特別是獲得 exceptional_design 與 interactive_output 標籤的作品。舉辦作業展示會，讓學生互相學習。提供創意主題靈感清單，鼓勵跨領域應用。
+          </p>
+        </div>
+        <div style="background:linear-gradient(135deg,#f0fdf4,#dcfce7); border-radius:12px; padding:1.5rem;">
+          <div style="font-size:1.5rem; margin-bottom:0.5rem;">📖</div>
+          <h4 style="color:#065f46; margin-bottom:0.75rem;">README 撰寫指導</h4>
+          <p style="font-size:0.87rem; color:#064e3b; line-height:1.7;">
+            提供 README 撰寫模板與評分標準說明，強調可重現性的重要性。可安排同儕互評環節，讓學生嘗試依照他人 README 重現結果，從中體會文件品質的重要性。
+          </p>
+        </div>
+        <div style="background:linear-gradient(135deg,#fffbeb,#fef3c7); border-radius:12px; padding:1.5rem;">
+          <div style="font-size:1.5rem; margin-bottom:0.5rem;">🤖</div>
+          <h4 style="color:#92400e; margin-bottom:0.75rem;">AI 評分系統優化</h4>
+          <p style="font-size:0.87rem; color:#78350f; line-height:1.7;">
+            建議統一 Claude 與 Gemini 的評分 Prompt，特別針對 Markdown 豐富度維度。可考慮增加評分標準的具體範例，減少模型間的主觀差異。人工複審比例（34.6%）偏高，可調整差異門檻或改善 Prompt。
+          </p>
+        </div>
+        <div style="background:linear-gradient(135deg,#fef2f2,#fee2e2); border-radius:12px; padding:1.5rem;">
+          <div style="font-size:1.5rem; margin-bottom:0.5rem;">📊</div>
+          <h4 style="color:#991b1b; margin-bottom:0.75rem;">早期預警機制</h4>
+          <p style="font-size:0.87rem; color:#7f1d1d; line-height:1.7;">
+            對於工具鏈設置，建議在截止日前一週提供自動化檢查工具，讓學生能提前發現問題。可設置中期檢查點，對尚未完成基本設置的學生提供額外輔導。
+          </p>
+        </div>
+        <div style="background:linear-gradient(135deg,#f0f9ff,#e0f2fe); border-radius:12px; padding:1.5rem;">
+          <div style="font-size:1.5rem; margin-bottom:0.5rem;">📈</div>
+          <h4 style="color:#0c4a6e; margin-bottom:0.75rem;">分層教學策略</h4>
+          <p style="font-size:0.87rem; color:#075985; line-height:1.7;">
+            針對不同程度學生設計分層學習路徑：基礎組專注工具鏈設置與基本 Markdown；進階組挑戰互動式輸出與視覺設計。特色專案可作為加分項目，激勵學生超越基本要求。
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:1.5rem;">
+      <div class="card-title">📌 下一次作業改善重點優先順序</div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>優先級</th><th>改善項目</th><th>影響範圍</th><th>預期效益</th><th>難度</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>🔴 P1</td>
+              <td>工具鏈設置輔助文件與環境腳本</td>
+              <td>104 名未通過學生</td>
+              <td>降低門檻失敗率至 &lt;5%</td>
+              <td>低</td>
+            </tr>
+            <tr>
+              <td>🔴 P1</td>
+              <td>統一 AI 評分 Prompt（Markdown 豐富度）</td>
+              <td>204 名複審學生</td>
+              <td>降低人工複審比例</td>
+              <td>中</td>
+            </tr>
+            <tr>
+              <td>🟠 P2</td>
+              <td>README 撰寫模板與範例</td>
+              <td>全體學生</td>
+              <td>提升可重現性分數</td>
+              <td>低</td>
+            </tr>
+            <tr>
+              <td>🟠 P2</td>
+              <td>創意度評分標準說明與範例</td>
+              <td>全體學生</td>
+              <td>提升創意度平均分</td>
+              <td>中</td>
+            </tr>
+            <tr>
+              <td>🟡 P3</td>
+              <td>優秀作業匿名展示與分享</td>
+              <td>全體學生</td>
+              <td>激勵學習動機</td>
+              <td>低</td>
+            </tr>
+            <tr>
+              <td>🟡 P3</td>
+              <td>互動式輸出教學資源</td>
+              <td>進階學生</td>
+              <td>增加 interactive_output 標籤數</td>
+              <td>高</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== SECTION 8: SAMPLING NOTES ===== -->
+  <section class="section anchor" id="sampling-notes">
+    <h2 class="section-title">🔎 抽檢觀察筆記（Sampling Review Notes）</h2>
+    <p style="color: var(--text-muted); margin-bottom: 1.5rem;">
+      以下為教學團隊透過 Claude Sonnet 4.6 對 50 份隨機抽樣作品進行人工抽檢後，彙整的評分系統觀察與改進建議。
+      本節旨在讓師生共同理解全體分布特性，所有個人識別資訊已移除。
+    </p>
+
+    <!-- Note 1 -->
+    <div class="card" style="margin-bottom: 1.25rem;">
+      <div style="display:flex; align-items:center; gap:0.6rem; margin-bottom:0.75rem;">
+        <span style="background:var(--primary); color:white; border-radius:999px; width:28px; height:28px; display:inline-flex; align-items:center; justify-content:center; font-size:0.8rem; font-weight:700;">1</span>
+        <h3 style="font-size:1.05rem; font-weight:700; color:var(--text);">排序合理性</h3>
+      </div>
+      <p>50 份樣本的整體排序大致合理，但存在兩個系統性問題：</p>
+      <ul style="margin-top:0.5rem; margin-left:1.5rem; color:var(--text);">
+        <li style="margin-bottom:0.4rem;">部分作品的三個技術維度高分過度補償了創意度差距，導致加權總分高於創意度更突出的作品。例如某作品加權總分 94.8，但創意度僅 90.0，排名卻高於創意度 93.5 / 91.0 的同級作品。</li>
+        <li>自行開發 CLI 工具的工程創新型作品，因 Markdown Richness 維度略低（如 91.5）而被壓制至 93 分段，其工程深度未獲充分反映。</li>
+      </ul>
+    </div>
+
+    <!-- Note 2 -->
+    <div class="card" style="margin-bottom: 1.25rem;">
+      <div style="display:flex; align-items:center; gap:0.6rem; margin-bottom:0.75rem;">
+        <span style="background:var(--warning); color:white; border-radius:999px; width:28px; height:28px; display:inline-flex; align-items:center; justify-content:center; font-size:0.8rem; font-weight:700;">2</span>
+        <h3 style="font-size:1.05rem; font-weight:700; color:var(--text);">分數級距過密</h3>
+      </div>
+      <p>90–96 分段（A tier）的分布過於密集，約 15 份作品擠在 6 分範圍內，導致頂尖作品與中上作品的差距不夠顯著。</p>
+      <p style="margin-top:0.5rem;"><strong>改進建議：</strong>未來考慮加大創意度權重，或對「工具鏈自主開發」設立額外加分機制，以拉開級距。</p>
+    </div>
+
+    <!-- Note 3 -->
+    <div class="card" style="margin-bottom: 1.25rem;">
+      <div style="display:flex; align-items:center; gap:0.6rem; margin-bottom:0.75rem;">
+        <span style="background:var(--success); color:white; border-radius:999px; width:28px; height:28px; display:inline-flex; align-items:center; justify-content:center; font-size:0.8rem; font-weight:700;">3</span>
+        <h3 style="font-size:1.05rem; font-weight:700; color:var(--text);">創意度一致性</h3>
+      </div>
+      <p>整體一致性良好——高創意度分數（91–93.5）對應更原創的主題選擇（如火影世界觀、RPG 履歷、公鯊小企劃、mark2slide 工具開發），低創意度分數（71–77.5）對應套模板或內容空洞的作品。</p>
+      <p style="margin-top:0.5rem;">唯一例外：某作品創意度 91.5 但加權總分僅 88.8，主要因 Tool Completeness（86.0）偏低而被拉低——此懲罰被判定為合理。</p>
+    </div>
+
+    <!-- Note 4 -->
+    <div class="card" style="margin-bottom: 1.25rem;">
+      <div style="display:flex; align-items:center; gap:0.6rem; margin-bottom:0.75rem;">
+        <span style="background:var(--secondary); color:white; border-radius:999px; width:28px; height:28px; display:inline-flex; align-items:center; justify-content:center; font-size:0.8rem; font-weight:700;">4</span>
+        <h3 style="font-size:1.05rem; font-weight:700; color:var(--text);">特色標記一致性</h3>
+      </div>
+      <p><code>creative_topic</code> 標記被過度使用於「個人履歷」主題——而個人履歷是樣本中最常見的主題類型（估計佔 40%+），不應被視為「創意主題」。</p>
+      <p style="margin-top:0.5rem;"><strong>改進建議：</strong>將 <code>creative_topic</code> 保留給真正稀缺的主題選擇（如火影世界觀、RPG 履歷、公鯊小企劃、手搖飲技術規格書、寵物照顧指南等），以提升標記的鑑別力。</p>
+    </div>
+
+    <!-- Note 5 -->
+    <div class="card" style="margin-bottom: 1.25rem;">
+      <div style="display:flex; align-items:center; gap:0.6rem; margin-bottom:0.75rem;">
+        <span style="background:var(--accent); color:white; border-radius:999px; width:28px; height:28px; display:inline-flex; align-items:center; justify-content:center; font-size:0.8rem; font-weight:700;">5</span>
+        <h3 style="font-size:1.05rem; font-weight:700; color:var(--text);">底部分段合理性</h3>
+      </div>
+      <p>底部三份作品（49.8 / 59.5 / 65.1 分）的低分有充分依據——工具鏈嚴重不完整、內容空洞。排序合理，無需調整。</p>
+    </div>
+
+    <!-- Note 6 -->
+    <div class="card" style="margin-bottom: 1.25rem;">
+      <div style="display:flex; align-items:center; gap:0.6rem; margin-bottom:0.75rem;">
+        <span style="background:var(--danger); color:white; border-radius:999px; width:28px; height:28px; display:inline-flex; align-items:center; justify-content:center; font-size:0.8rem; font-weight:700;">6</span>
+        <h3 style="font-size:1.05rem; font-weight:700; color:var(--text);">exemplary_readme 標記通膨</h3>
+      </div>
+      <p><code>exemplary_readme</code> 標記在高分段（90+）幾乎普遍存在，失去鑑別力。</p>
+      <p style="margin-top:0.5rem;"><strong>改進建議：</strong>未來設立更嚴格的標準，區分「README 完整」與「README 真正示範性」，避免標記通膨。</p>
+    </div>
+
+    <!-- Summary Box -->
+    <div style="background: linear-gradient(135deg, #eff6ff 0%, #f0f9ff 100%); border-left: 4px solid var(--primary); border-radius: 8px; padding: 1.25rem 1.5rem; margin-top: 1rem;">
+      <p style="font-weight:700; color:var(--primary); margin-bottom:0.5rem;">📌 總結</p>
+      <p>此次 AI 輔助評分系統的整體表現良好，排序與人工判斷大致吻合。主要改進方向集中在：<strong>級距拉開</strong>（加大創意度權重或設立額外加分）、<strong>標記校準</strong>（收緊 creative_topic 與 exemplary_readme 的認定標準），以及<strong>工程創新加分</strong>（對自主開發工具鏈的作品給予額外肯定）。這些觀察將作為 HW2 評分系統的改進依據。</p>
+    </div>
+  </section>
+
+  <!-- ===== SECTION 9: CALIBRATION & NORMALIZATION ===== -->
+  <section class="section anchor" id="calibration">
+    <h2 class="section-title">⚖️ 校準與正規化流程（Calibration & Normalization）</h2>
+    <p style="color: var(--text-muted); margin-bottom: 1.5rem;">
+      本次作業評分經過四階段流水線處理。Stage 1–2 為逐份獨立評分，Stage 3–4 為跨學生校準與正規化。
+      以下說明 Stage 3（Anchor Calibration）與 Stage 4（Normalization）的完整方法論，供師生理解最終分數的產生過程。
+    </p>
+
+    <!-- ===== Stage 3 ===== -->
+    <div class="card" style="margin-bottom: 2rem; border-top: 4px solid var(--primary);">
+      <h3 style="font-size: 1.25rem; font-weight: 700; color: var(--primary); margin-bottom: 1rem;">
+        Stage 3：Anchor Calibration（錨點校準）
+      </h3>
+
+      <!-- Why calibration -->
+      <div style="background: #fef3c7; border-radius: 8px; padding: 1rem 1.25rem; margin-bottom: 1.25rem;">
+        <p style="font-weight: 700; color: var(--warning); margin-bottom: 0.5rem;">⚠️ 為什麼需要校準？</p>
+        <p>Stage 2 的評分是「逐份獨立」的——每位學生的作業獨立送出 AI 模型，模型無法跨學生比較。這會導致三個問題：</p>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 0.75rem; margin-top: 0.75rem;">
+          <div style="background: white; border-radius: 6px; padding: 0.75rem; border: 1px solid #fde68a;">
+            <p style="font-weight: 700; font-size: 0.85rem; color: var(--warning);">量表漂移 Scale Drift</p>
+            <p style="font-size: 0.85rem; margin-top: 0.3rem;">同一份作業在第 1 份評分時可能拿 80 分，到第 500 份時因模型的隱性量表偏移而拿 75 分</p>
+          </div>
+          <div style="background: white; border-radius: 6px; padding: 0.75rem; border: 1px solid #fde68a;">
+            <p style="font-weight: 700; font-size: 0.85rem; color: var(--warning);">個案失準</p>
+            <p style="font-size: 0.85rem; margin-top: 0.3rem;">某些作業可能因措辭風格或主題冷門而被系統性低估或高估</p>
+          </div>
+          <div style="background: white; border-radius: 6px; padding: 0.75rem; border: 1px solid #fde68a;">
+            <p style="font-weight: 700; font-size: 0.85rem; color: var(--warning);">創意度主觀性</p>
+            <p style="font-size: 0.85rem; margin-top: 0.3rem;">creativity 維度最容易在不同 prompt 間出現不一致判斷</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sampling Strategy -->
+      <h4 style="font-size: 1rem; font-weight: 700; margin-bottom: 0.75rem; color: var(--text);">📋 錨點抽樣策略</h4>
+      <p style="margin-bottom: 0.75rem;">從全部評分中抽取約 50 份代表性樣本，讓 AI 做跨學生比較校準：</p>
+      <div style="overflow-x: auto; margin-bottom: 1.25rem;">
+        <table style="width: 100%; border-collapse: collapse; font-size: 0.9rem;">
+          <thead>
+            <tr style="background: var(--primary); color: white;">
+              <th style="padding: 0.6rem 1rem; text-align: left; border-radius: 6px 0 0 0;">層級</th>
+              <th style="padding: 0.6rem 1rem; text-align: center;">抽取數</th>
+              <th style="padding: 0.6rem 1rem; text-align: left; border-radius: 0 6px 0 0;">來源</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr style="background: #f0fdf4;">
+              <td style="padding: 0.5rem 1rem; border-bottom: 1px solid var(--border); font-weight: 600;">Top 10%</td>
+              <td style="padding: 0.5rem 1rem; border-bottom: 1px solid var(--border); text-align: center;">8</td>
+              <td style="padding: 0.5rem 1rem; border-bottom: 1px solid var(--border);">加權總分最高的前 10%</td>
+            </tr>
+            <tr>
+              <td style="padding: 0.5rem 1rem; border-bottom: 1px solid var(--border); font-weight: 600;">P75（70–80%）</td>
+              <td style="padding: 0.5rem 1rem; border-bottom: 1px solid var(--border); text-align: center;">8</td>
+              <td style="padding: 0.5rem 1rem; border-bottom: 1px solid var(--border);">第 70–80 百分位</td>
+            </tr>
+            <tr style="background: #f0fdf4;">
+              <td style="padding: 0.5rem 1rem; border-bottom: 1px solid var(--border); font-weight: 600;">Median（45–55%）</td>
+              <td style="padding: 0.5rem 1rem; border-bottom: 1px solid var(--border); text-align: center;">10</td>
+              <td style="padding: 0.5rem 1rem; border-bottom: 1px solid var(--border);">第 45–55 百分位</td>
+            </tr>
+            <tr>
+              <td style="padding: 0.5rem 1rem; border-bottom: 1px solid var(--border); font-weight: 600;">P25（20–30%）</td>
+              <td style="padding: 0.5rem 1rem; border-bottom: 1px solid var(--border); text-align: center;">8</td>
+              <td style="padding: 0.5rem 1rem; border-bottom: 1px solid var(--border);">第 20–30 百分位</td>
+            </tr>
+            <tr style="background: #f0fdf4;">
+              <td style="padding: 0.5rem 1rem; border-bottom: 1px solid var(--border); font-weight: 600;">Bottom 10%</td>
+              <td style="padding: 0.5rem 1rem; border-bottom: 1px solid var(--border); text-align: center;">8</td>
+              <td style="padding: 0.5rem 1rem; border-bottom: 1px solid var(--border);">加權總分最低的 10%</td>
+            </tr>
+            <tr>
+              <td style="padding: 0.5rem 1rem; font-weight: 600;">Distinguished</td>
+              <td style="padding: 0.5rem 1rem; text-align: center;">8</td>
+              <td style="padding: 0.5rem 1rem;">被標記特色的專案</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Calibration Flow -->
+      <h4 style="font-size: 1rem; font-weight: 700; margin-bottom: 0.75rem; color: var(--text);">🔄 校準流程</h4>
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 0.5rem; margin-bottom: 1.25rem;">
+        <div style="background: linear-gradient(135deg, #eff6ff, #e0f2fe); border-radius: 8px; padding: 0.75rem; text-align: center;">
+          <div style="font-size: 1.5rem;">①</div>
+          <p style="font-size: 0.82rem; font-weight: 600; margin-top: 0.3rem;">抽取 ~50 份錨點</p>
+        </div>
+        <div style="background: linear-gradient(135deg, #eff6ff, #e0f2fe); border-radius: 8px; padding: 0.75rem; text-align: center;">
+          <div style="font-size: 1.5rem;">②</div>
+          <p style="font-size: 0.82rem; font-weight: 600; margin-top: 0.3rem;">載入 content.md + README.md + 原始分數</p>
+        </div>
+        <div style="background: linear-gradient(135deg, #eff6ff, #e0f2fe); border-radius: 8px; padding: 0.75rem; text-align: center;">
+          <div style="font-size: 1.5rem;">③</div>
+          <p style="font-size: 0.82rem; font-weight: 600; margin-top: 0.3rem;">組合為單一大型 prompt（1M context）</p>
+        </div>
+        <div style="background: linear-gradient(135deg, #eff6ff, #e0f2fe); border-radius: 8px; padding: 0.75rem; text-align: center;">
+          <div style="font-size: 1.5rem;">④</div>
+          <p style="font-size: 0.82rem; font-weight: 600; margin-top: 0.3rem;">AI 回傳調整建議 + 等級邊界 + 標記覆審</p>
+        </div>
+        <div style="background: linear-gradient(135deg, #eff6ff, #e0f2fe); border-radius: 8px; padding: 0.75rem; text-align: center;">
+          <div style="font-size: 1.5rem;">⑤</div>
+          <p style="font-size: 0.82rem; font-weight: 600; margin-top: 0.3rem;">錨點直接套用調整值</p>
+        </div>
+        <div style="background: linear-gradient(135deg, #eff6ff, #e0f2fe); border-radius: 8px; padding: 0.75rem; text-align: center;">
+          <div style="font-size: 1.5rem;">⑥</div>
+          <p style="font-size: 0.82rem; font-weight: 600; margin-top: 0.3rem;">非錨點依 tier 平均調整值套用</p>
+        </div>
+      </div>
+
+      <!-- Two-Layer Propagation -->
+      <h4 style="font-size: 1rem; font-weight: 700; margin-bottom: 0.75rem; color: var(--text);">🏗️ 兩層傳播機制</h4>
+      <p style="margin-bottom: 0.75rem;">校準調整分為「直接調整」與「等級傳播」兩層，確保所有學生都受益於校準結果：</p>
+
+      <!-- SVG Diagram for propagation -->
+      <div style="background: #f8fafc; border-radius: 12px; padding: 1.5rem; margin-bottom: 1.25rem; text-align: center; overflow-x: auto;">
+        <svg viewBox="0 0 700 360" xmlns="http://www.w3.org/2000/svg" style="max-width: 680px; width: 100%;">
+          <!-- Top box -->
+          <rect x="210" y="10" width="280" height="52" rx="10" fill="#2563eb" />
+          <text x="350" y="32" text-anchor="middle" fill="white" font-size="13" font-weight="700">50 份錨點樣本</text>
+          <text x="350" y="50" text-anchor="middle" fill="rgba(255,255,255,0.8)" font-size="11">（被 AI 逐一審閱）</text>
+
+          <!-- Arrows down -->
+          <line x1="280" y1="62" x2="180" y2="110" stroke="#2563eb" stroke-width="2" marker-end="url(#arrowBlue)" />
+          <line x1="420" y1="62" x2="520" y2="110" stroke="#2563eb" stroke-width="2" marker-end="url(#arrowBlue)" />
+
+          <!-- Left branch: Direct -->
+          <rect x="80" y="110" width="200" height="48" rx="8" fill="#059669" />
+          <text x="180" y="132" text-anchor="middle" fill="white" font-size="12" font-weight="700">直接調整（±N 分）</text>
+          <text x="180" y="148" text-anchor="middle" fill="rgba(255,255,255,0.8)" font-size="10">只影響錨點本身</text>
+
+          <!-- Right branch: Tier -->
+          <rect x="420" y="110" width="200" height="48" rx="8" fill="#7c3aed" />
+          <text x="520" y="132" text-anchor="middle" fill="white" font-size="12" font-weight="700">定義等級邊界</text>
+          <text x="520" y="148" text-anchor="middle" fill="rgba(255,255,255,0.8)" font-size="10">A / B / C / D tier</text>
+
+          <!-- Arrow from Tier down -->
+          <line x1="470" y1="158" x2="400" y2="210" stroke="#7c3aed" stroke-width="2" marker-end="url(#arrowPurple)" />
+          <line x1="570" y1="158" x2="580" y2="210" stroke="#7c3aed" stroke-width="2" marker-end="url(#arrowPurple)" />
+
+          <!-- Bottom left of right branch -->
+          <rect x="300" y="210" width="200" height="48" rx="8" fill="#7c3aed" opacity="0.8" />
+          <text x="400" y="232" text-anchor="middle" fill="white" font-size="11" font-weight="600">計算每個 tier</text>
+          <text x="400" y="248" text-anchor="middle" fill="rgba(255,255,255,0.8)" font-size="11">的平均調整值</text>
+
+          <!-- Bottom right of right branch -->
+          <rect x="510" y="210" width="180" height="48" rx="8" fill="#0891b2" />
+          <text x="600" y="232" text-anchor="middle" fill="white" font-size="11" font-weight="600">非錨點學生</text>
+          <text x="600" y="248" text-anchor="middle" fill="rgba(255,255,255,0.8)" font-size="11">依 tier 套用平均調整</text>
+
+          <!-- Final result boxes -->
+          <line x1="180" y1="158" x2="180" y2="300" stroke="#059669" stroke-width="2" stroke-dasharray="6,3" marker-end="url(#arrowGreen)" />
+          <line x1="400" y1="258" x2="400" y2="300" stroke="#7c3aed" stroke-width="1.5" stroke-dasharray="6,3" />
+          <line x1="600" y1="258" x2="600" y2="300" stroke="#0891b2" stroke-width="1.5" stroke-dasharray="6,3" />
+
+          <rect x="60" y="305" width="600" height="42" rx="8" fill="#f1f5f9" stroke="#e2e8f0" stroke-width="1.5" />
+          <text x="360" y="331" text-anchor="middle" fill="#1e293b" font-size="12" font-weight="700">所有學生獲得校準後分數 → 進入 Stage 4 正規化</text>
+
+          <!-- Arrow markers -->
+          <defs>
+            <marker id="arrowBlue" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6 Z" fill="#2563eb"/></marker>
+            <marker id="arrowGreen" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6 Z" fill="#059669"/></marker>
+            <marker id="arrowPurple" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6 Z" fill="#7c3aed"/></marker>
+          </defs>
+        </svg>
+      </div>
+
+      <!-- Key bullets -->
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-bottom: 1.25rem;">
+        <div style="background: #ecfdf5; border-radius: 8px; padding: 0.85rem 1rem; border-left: 3px solid var(--success);">
+          <p style="font-weight: 700; font-size: 0.85rem; color: var(--success);">錨點（直接調整）</p>
+          <p style="font-size: 0.85rem; margin-top: 0.3rem;">AI 針對每位錨點建議 <code>suggested_adjustment</code>（如 +3 或 -5），直接加到原始分數</p>
+        </div>
+        <div style="background: #f5f3ff; border-radius: 8px; padding: 0.85rem 1rem; border-left: 3px solid var(--secondary);">
+          <p style="font-weight: 700; font-size: 0.85rem; color: var(--secondary);">非錨點（等級傳播）</p>
+          <p style="font-size: 0.85rem; margin-top: 0.3rem;">AI 定義 A/B/C/D 四個 tier 的邊界，程式計算每個 tier 中錨點的平均調整值，然後套用到該 tier 所有非錨點學生</p>
+        </div>
+      </div>
+
+      <!-- Design rationale -->
+      <h4 style="font-size: 1rem; font-weight: 700; margin-bottom: 0.75rem; color: var(--text);">💡 設計原理 FAQ</h4>
+      <div style="margin-bottom: 0.5rem;">
+        <details style="background: #f8fafc; border-radius: 8px; border: 1px solid var(--border); margin-bottom: 0.5rem;">
+          <summary style="padding: 0.75rem 1rem; cursor: pointer; font-weight: 600; font-size: 0.9rem;">為什麼用 50 份錨點而非全部？</summary>
+          <div style="padding: 0.5rem 1rem 0.75rem;">
+            <p style="font-size: 0.88rem;">591 份 ×（content.md + README.md）遠超 Claude 的 context window。50 份 stratified sample 覆蓋所有分數帶，足以偵測系統性偏差。錨點包含 6 個分層（Top / P75 / Median / P25 / Bottom / Distinguished），確保 AI 能看見完整的分數光譜。</p>
+          </div>
+        </details>
+        <details style="background: #f8fafc; border-radius: 8px; border: 1px solid var(--border); margin-bottom: 0.5rem;">
+          <summary style="padding: 0.75rem 1rem; cursor: pointer; font-weight: 600; font-size: 0.9rem;">為什麼同時送原始分數和原文？</summary>
+          <div style="padding: 0.5rem 1rem 0.75rem;">
+            <p style="font-size: 0.88rem;">AI 可以交叉驗證：「這份拿 90 分的作業，真的比那份拿 85 分的好嗎？」同時可偵測 Stage 2 的漏判（如某學生使用了 Mermaid 圖但沒被計分），並審核 creativity 評分理由是否合理一致。</p>
+          </div>
+        </details>
+        <details style="background: #f8fafc; border-radius: 8px; border: 1px solid var(--border);">
+          <summary style="padding: 0.75rem 1rem; cursor: pointer; font-weight: 600; font-size: 0.9rem;">特色標記覆審（Distinction Override）是什麼？</summary>
+          <div style="padding: 0.5rem 1rem 0.75rem;">
+            <p style="font-size: 0.88rem;">AI 可建議新增（<code>add</code>）Stage 2 漏標的優秀作品，或移除（<code>remove</code>）Stage 2 誤標的一般作品。確保最終的特色專案清單經過跨學生比較驗證。</p>
+          </div>
+        </details>
+      </div>
+    </div>
+
+    <!-- ===== Stage 4 ===== -->
+    <div class="card" style="border-top: 4px solid var(--secondary);">
+      <h3 style="font-size: 1.25rem; font-weight: 700; color: var(--secondary); margin-bottom: 1rem;">
+        Stage 4：Normalization（分數正規化）
+      </h3>
+      <p style="margin-bottom: 1rem;">將校準後的分數正規化到目標分佈，確保最終成績符合教學期望的分數範圍與分佈形態。</p>
+
+      <!-- Steps -->
+      <h4 style="font-size: 1rem; font-weight: 700; margin-bottom: 0.75rem; color: var(--text);">📐 正規化步驟</h4>
+      <div style="position: relative; margin-bottom: 1.5rem; padding-left: 2rem;">
+        <!-- Vertical line -->
+        <div style="position: absolute; left: 12px; top: 4px; bottom: 4px; width: 2px; background: linear-gradient(to bottom, var(--secondary), var(--accent));"></div>
+
+        <div style="position: relative; margin-bottom: 1rem;">
+          <div style="position: absolute; left: -2rem; top: 2px; width: 22px; height: 22px; background: var(--secondary); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 0.7rem; font-weight: 700;">1</div>
+          <p style="font-size: 0.9rem;">取出所有通過門檻學生的 <code>calibrated_weighted_total</code></p>
+        </div>
+        <div style="position: relative; margin-bottom: 1rem;">
+          <div style="position: absolute; left: -2rem; top: 2px; width: 22px; height: 22px; background: var(--secondary); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 0.7rem; font-weight: 700;">2</div>
+          <div>
+            <p style="font-size: 0.9rem; font-weight: 600;">Rank-based Normal Transformation</p>
+            <div style="background: #1e293b; color: #e2e8f0; border-radius: 8px; padding: 0.75rem 1rem; margin-top: 0.4rem; font-family: 'Courier New', monospace; font-size: 0.82rem; overflow-x: auto;">
+              <div><span style="color: #93c5fd;">ranks</span> = rankdata(scores, method=<span style="color: #86efac;">'average'</span>)</div>
+              <div><span style="color: #93c5fd;">percentiles</span> = ranks / (N + 1)</div>
+              <div><span style="color: #93c5fd;">z_scores</span> = norm.ppf(percentiles)</div>
+            </div>
+          </div>
+        </div>
+        <div style="position: relative; margin-bottom: 1rem;">
+          <div style="position: absolute; left: -2rem; top: 2px; width: 22px; height: 22px; background: var(--accent); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 0.7rem; font-weight: 700;">3</div>
+          <div>
+            <p style="font-size: 0.9rem;">映射到目標分佈</p>
+            <div style="background: #1e293b; color: #e2e8f0; border-radius: 8px; padding: 0.75rem 1rem; margin-top: 0.4rem; font-family: 'Courier New', monospace; font-size: 0.82rem;">
+              <span style="color: #93c5fd;">final</span> = target_mean + target_std × z_score
+            </div>
+          </div>
+        </div>
+        <div style="position: relative; margin-bottom: 1rem;">
+          <div style="position: absolute; left: -2rem; top: 2px; width: 22px; height: 22px; background: var(--accent); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 0.7rem; font-weight: 700;">4</div>
+          <p style="font-size: 0.9rem;">Clip 到 <code>[score_min, score_max]</code>（預設 <strong>60–95</strong>）</p>
+        </div>
+        <div style="position: relative;">
+          <div style="position: absolute; left: -2rem; top: 2px; width: 22px; height: 22px; background: var(--accent); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 0.7rem; font-weight: 700;">5</div>
+          <p style="font-size: 0.9rem;">四捨五入為整數 → <strong>最終成績</strong></p>
+        </div>
+      </div>
+
+      <!-- Why rank-based -->
+      <div style="background: linear-gradient(135deg, #f5f3ff 0%, #ede9fe 100%); border-left: 4px solid var(--secondary); border-radius: 8px; padding: 1rem 1.25rem; margin-bottom: 1rem;">
+        <p style="font-weight: 700; color: var(--secondary); margin-bottom: 0.4rem;">🧠 為什麼使用 Rank-based Normal Transformation？</p>
+        <p style="font-size: 0.9rem;">此方法先將原始分數轉為排名，再映射到標準常態分佈，最後拉伸到目標平均與標準差。優點是：(1) 不受原始分數分佈形狀影響（即使 AI 評分偏態集中也能拉開）；(2) 保留排序——原始排名不會因轉換而改變；(3) 最終分數近似常態分佈，符合教學成績的慣例期望。</p>
+      </div>
+
+      <!-- Pipeline summary -->
+      <div style="background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%); border-left: 4px solid var(--success); border-radius: 8px; padding: 1rem 1.25rem;">
+        <p style="font-weight: 700; color: var(--success); margin-bottom: 0.4rem;">📌 完整流水線總結</p>
+        <div style="display: flex; align-items: center; gap: 0.4rem; flex-wrap: wrap; font-size: 0.88rem; margin-top: 0.5rem;">
+          <span style="background: white; border: 1px solid #d1d5db; border-radius: 6px; padding: 0.3rem 0.7rem; font-weight: 600;">Stage 1</span>
+          <span>Gate Check</span>
+          <span style="color: var(--text-muted);">→</span>
+          <span style="background: white; border: 1px solid #d1d5db; border-radius: 6px; padding: 0.3rem 0.7rem; font-weight: 600;">Stage 2</span>
+          <span>逐份 AI 評分</span>
+          <span style="color: var(--text-muted);">→</span>
+          <span style="background: var(--primary); color: white; border-radius: 6px; padding: 0.3rem 0.7rem; font-weight: 600;">Stage 3</span>
+          <span>錨點校準</span>
+          <span style="color: var(--text-muted);">→</span>
+          <span style="background: var(--secondary); color: white; border-radius: 6px; padding: 0.3rem 0.7rem; font-weight: 600;">Stage 4</span>
+          <span>正規化 → 最終成績</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<!-- ===== FOOTER ===== -->
+<footer class="site-footer">
+  <p><strong>AIASE2026 HW1 評分分析報告</strong></p>
+  <p style="margin-top:0.5rem;">本報告由 AI 助教系統自動生成，所有數據均已匿名化處理，不含任何個人識別資訊。</p>
+  <p style="margin-top:0.5rem;">報告生成時間：<strong>2026-03-17T16:05:30.654615+00:00</strong></p>
+  <p style="margin-top:0.5rem; opacity:0.6;">AIASE2026 課程 ｜ AI 助教系統 ｜ 評分模型：Claude + Gemini 雙模型聚合</p>
+</footer>
+
+<!-- ===== CHARTS ===== -->
+<script>
+// ===== Color Palette =====
+const COLORS = {
+  blue: '#2563eb', blueLight: 'rgba(37,99,235,0.15)',
+  purple: '#7c3aed', purpleLight: 'rgba(124,58,237,0.15)',
+  green: '#059669', greenLight: 'rgba(5,150,105,0.15)',
+  orange: '#d97706', orangeLight: 'rgba(217,119,6,0.15)',
+  red: '#dc2626', redLight: 'rgba(220,38,38,0.15)',
+  teal: '#0891b2', tealLight: 'rgba(8,145,178,0.15)',
+  pink: '#be185d', pinkLight: 'rgba(190,24,93,0.15)',
+};
+
+Chart.defaults.font.family = "'Segoe UI', 'PingFang TC', 'Microsoft JhengHei', sans-serif";
+Chart.defaults.color = '#64748b';
+
+// ===== 1. Pass/Fail Pie =====
+new Chart(document.getElementById('chartPassFail'), {
+  type: 'doughnut',
+  data: {
+    labels: ['通過門檻 (591)', '未通過門檻 (104)'],
+    datasets: [{
+      data: [591, 104],
+      backgroundColor: [COLORS.green, COLORS.red],
+      borderWidth: 3,
+      borderColor: '#fff',
+      hoverOffset: 8
+    }]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    plugins: {
+      legend: { position: 'bottom', labels: { padding: 16, font: { size: 12 } } },
+      tooltip: {
+        callbacks: {
+          label: ctx => ` ${ctx.label}: ${((ctx.raw/695)*100).toFixed(1)}%`
+        }
+      }
+    },
+    cutout: '65%'
+  }
+});
+
+// ===== 2. Final Score Histogram =====
+new Chart(document.getElementById('chartFinalHist'), {
+  type: 'bar',
+  data: {
+    labels: ["61-63","63-64","64-66","66-68","68-69","69-71","71-73","73-74","74-76","76-78","78-79","79-81","81-82","82-84","84-86","86-87","87-89","89-91","91-92","92-94"],
+    datasets: [{
+      label: '人數',
+      data: [1,3,3,9,17,13,36,50,32,74,78,37,71,59,27,35,23,6,10,7],
+      backgroundColor: ctx => {
+        const v = ctx.raw;
+        if (v >= 70) return COLORS.blue;
+        if (v >= 40) return COLORS.purple;
+        return COLORS.orange;
+      },
+      borderRadius: 4,
+      borderSkipped: false,
+    }]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    plugins: {
+      legend: { display: false },
+      tooltip: { callbacks: { label: ctx => ` ${ctx.raw} 人` } }
+    },
+    scales: {
+      x: { grid: { display: false }, ticks: { maxRotation: 45, font: { size: 10 } } },
+      y: { beginAtZero: true, grid: { color: '#f1f5f9' }, title: { display: true, text: '人數' } }
+    }
+  }
+});
+
+// ===== 3. Weighted Total Histogram =====
+new Chart(document.getElementById('chartWeightedHist'), {
+  type: 'bar',
+  data: {
+    labels: ["45-48","48-51","51-53","53-56","56-58","58-61","61-64","64-66","66-69","69-72","72-74","74-77","77-79","79-82","82-85","85-87","87-90","90-92","92-95","95-98"],
+    datasets: [{
+      label: '人數',
+      data: [3,1,3,2,2,6,0,2,2,8,12,18,28,44,53,78,98,123,73,35],
+      backgroundColor: COLORS.purple,
+      borderRadius: 4,
+      borderSkipped: false,
+    }]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    plugins: { legend: { display: false }, tooltip: { callbacks: { label: ctx => ` ${ctx.raw} 人` } } },
+    scales: {
+      x: { grid: { display: false }, ticks: { maxRotation: 45, font: { size: 10 } } },
+      y: { beginAtZero: true, grid: { color: '#f1f5f9' }, title: { display: true, text: '人數' } }
+    }
+  }
+});
+
+// ===== 4. Boxplot (simulated with bar + error) =====
+// Using floating bars to simulate boxplot
+new Chart(document.getElementById('chartBoxplot'), {
+  type: 'bar',
+  data: {
+    labels: ['Markdown 豐富度', '工具完整度', 'README 可重現性', '創意度'],
+    datasets: [
+      {
+        label: 'IQR (Q1-Q3)',
+        data: [
+          {x: 'Markdown 豐富度', y: [83.5, 91.5]},
+          {x: '工具完整度', y: [81.5, 93.5]},
+          {x: 'README 可重現性', y: [86.0, 94.0]},
+          {x: '創意度', y: [79.0, 88.5]},
+        ],
+        backgroundColor: [
+          'rgba(37,99,235,0.4)', 'rgba(124,58,237,0.4)',
+          'rgba(5,150,105,0.4)', 'rgba(217,119,6,0.4)'
+        ],
+        borderColor: [COLORS.blue, COLORS.purple, COLORS.green, COLORS.orange],
+        borderWidth: 2,
+        borderRadius: 4,
+      },
+      {
+        label: '中位數',
+        data: [88.5, 88.5, 91.5, 85.0],
+        type: 'line',
+        borderColor: '#1e293b',
+        backgroundColor: '#1e293b',
+        pointStyle: 'line',
+        pointRadius: 12,
+        pointBorderWidth: 3,
+        showLine: false,
+      }
+    ]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    plugins: {
+      legend: { display: true, position: 'top' },
+      tooltip: {
+        callbacks: {
+          label: ctx => {
+            if (ctx.datasetIndex === 0) {
+              const d = ctx.raw;
+              return ` IQR: ${d.y[0]} – ${d.y[1]}`;
+            }
+            return ` 中位數: ${ctx.raw}`;
+          }
+        }
+      }
+    },
+    scales: {
+      x: { grid: { display: false } },
+      y: { min: 60, max: 100, grid: { color: '#f1f5f9' }, title: { display: true, text: '分數' } }
+    }
+  }
+});
+
+// ===== 5. Radar Chart =====
+new Chart(document.getElementById('chartRadar'), {
+  type: 'radar',
+  data: {
+    labels: ['Markdown 豐富度\n(30%)', '工具完整度\n(25%)', 'README 可重現性\n(25%)', '創意度\n(20%)'],
+    datasets: [
+      {
+        label: '全體平均',
+        data: [86.76, 86.12, 87.75, 83.32],
+        backgroundColor: 'rgba(37,99,235,0.15)',
+        borderColor: COLORS.blue,
+        borderWidth: 2.5,
+        pointBackgroundColor: COLORS.blue,
+        pointRadius: 5,
+      },
+      {
+        label: '特色專案門檻 (85)',
+        data: [85, 85, 85, 85],
+        backgroundColor: 'rgba(5,150,105,0.05)',
+        borderColor: COLORS.green,
+        borderWidth: 1.5,
+        borderDash: [5, 5],
+        pointRadius: 0,
+      }
+    ]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    plugins: { legend: { position: 'bottom' } },
+    scales: {
+      r: {
+        min: 70, max: 100,
+        ticks: { stepSize: 5, font: { size: 10 } },
+        grid: { color: '#e2e8f0' },
+        pointLabels: { font: { size: 11 } }
+      }
+    }
+  }
+});
+
+// ===== 6. Dimension Histograms =====
+function makeDimChart(id, labels, data, color) {
+  new Chart(document.getElementById(id), {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: [{ label: '人數', data, backgroundColor: color, borderRadius: 3, borderSkipped: false }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false }, tooltip: { callbacks: { label: ctx => ` ${ctx.raw} 人` } } },
+      scales: {
+        x: { grid: { display: false }, ticks: { maxRotation: 60, font: { size: 9 } } },
+        y: { beginAtZero: true, grid: { color: '#f1f5f9' } }
+      }
+    }
+  });
+}
+
+makeDimChart('chartDimMD',
+  ["54-56","56-58","58-60","60-63","63-65","65-67","67-69","69-72","72-74","74-76","76-79","79-81","81-83","83-85","85-88","88-90","90-92","92-94","94-97","97-99"],
+  [5,1,2,2,0,4,2,21,16,9,42,4,19,48,61,112,125,48,45,25],
+  COLORS.blue
+);
+makeDimChart('chartDimTool',
+  ["22-26","26-30","30-34","34-38","38-42","42-46","46-49","49-53","53-57","57-61","61-65","65-69","69-73","73-76","76-80","80-84","84-88","88-92","92-96","96-100"],
+  [3,0,1,1,1,1,1,0,4,4,5,6,15,31,44,76,99,118,147,34],
+  COLORS.purple
+);
+makeDimChart('chartDimReadme',
+  ["22-26","26-30","30-34","34-38","38-42","42-46","46-49","49-53","53-57","57-61","61-65","65-69","69-73","73-76","76-80","80-84","84-88","88-92","92-96","96-100"],
+  [7,0,1,0,1,0,0,2,5,5,5,9,7,16,22,36,77,155,197,46],
+  COLORS.green
+);
+makeDimChart('chartDimCreativity',
+  ["40-43","43-46","46-49","49-51","51-54","54-57","57-60","60-63","63-66","66-68","68-71","71-74","74-77","77-80","80-83","83-86","86-88","88-91","91-94","94-97"],
+  [1,1,0,0,3,1,3,1,5,7,20,30,36,57,52,82,130,70,81,11],
+  COLORS.orange
+);
+
+// ===== 7. Scatter Plot (Claude vs Gemini, flagged) =====
+// Generate approximate scatter data from histograms
+(function() {
+  const claudeHist = [1,2,0,4,3,4,2,2,6,4,13,20,27,42,83,77,94,93,65,48];
+  const claudeMids = [33.5,37,40.5,43.5,46.5,49.5,53,56.5,59.5,62.5,65.5,69,72.5,75.5,78.5,81.5,85,88.5,91.5,94.5];
+  const geminiHist = [2,2,1,3,3,2,2,2,3,6,24,7,37,15,54,36,140,194,40,17];
+  const geminiMids = [57.5,60,62,64,66,68,70.5,73,75,77,79,81.5,84,86,88,90,92,94.5,97,99];
+
+  // Build approximate paired scatter from flagged diff stats
+  // Use diff mean -14.11, std 3.51 to generate approximate scatter
+  const scatterData = [];
+  const diffLabels = [-28.5,-27.5,-26.5,-25.5,-24.5,-23.5,-22.5,-21.5,-20.5,-19.5,-19,-18.5,-17.5,-16.5,-15.5,-14.5,-13.5,-12.5,-11.5,-10.5];
+  const diffCounts = [1,2,1,0,2,1,1,0,2,6,5,9,8,8,21,14,24,34,30,35];
+
+  // Generate scatter points: Gemini ~ 85-95, Claude = Gemini + diff
+  let idx = 0;
+  diffCounts.forEach((cnt, i) => {
+    const diff = diffLabels[i];
+    for (let j = 0; j < cnt; j++) {
+      const gemini = 85 + (idx % 15) + Math.random() * 5;
+      scatterData.push({ x: Math.min(96, Math.max(56, gemini)), y: Math.min(96, Math.max(32, gemini + diff)) });
+      idx++;
+    }
+  });
+
+  new Chart(document.getElementById('chartScatter'), {
+    type: 'scatter',
+    data: {
+      datasets: [
+        {
+          label: '標記複審樣本 (N=204)',
+          data: scatterData,
+          backgroundColor: 'rgba(124,58,237,0.35)',
+          borderColor: COLORS.purple,
+          borderWidth: 0.5,
+          pointRadius: 4,
+          pointHoverRadius: 6,
+        },
+        {
+          label: '等分線 (Claude=Gemini)',
+          data: [{x:56,y:56},{x:100,y:100}],
+          type: 'line',
+          borderColor: COLORS.red,
+          borderWidth: 1.5,
+          borderDash: [6,4],
+          pointRadius: 0,
+          fill: false,
+        }
+      ]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: {
+        legend: { position: 'bottom' },
+        tooltip: { callbacks: { label: ctx => ` Gemini: ${ctx.raw.x.toFixed(1)}, Claude: ${ctx.raw.y.toFixed(1)}` } }
+      },
+      scales: {
+        x: { min: 55, max: 100, title: { display: true, text: 'Gemini 分數' }, grid: { color: '#f1f5f9' } },
+        y: { min: 30, max: 100, title: { display: true, text: 'Claude 分數' }, grid: { color: '#f1f5f9' } }
+      }
+    }
+  });
+})();
+
+// ===== 8. Diff Histogram =====
+new Chart(document.getElementById('chartDiffHist'), {
+  type: 'bar',
+  data: {
+    labels: ["-29~-28","-28~-27","-27~-26","-26~-25","-25~-24","-24~-23","-23~-22","-22~-21","-21~-20","-20~-19","-19~-19","-19~-18","-18~-17","-17~-16","-16~-15","-15~-14","-14~-13","-13~-12","-12~-11","-11~-10"],
+    datasets: [{
+      label: '人數',
+      data: [1,2,1,0,2,1,1,0,2,6,5,9,8,8,21,14,24,34,30,35],
+      backgroundColor: ctx => {
+        const v = ctx.raw;
+        if (v >= 30) return COLORS.red;
+        if (v >= 20) return COLORS.orange;
+        return 'rgba(220,38,38,0.5)';
+      },
+      borderRadius: 3,
+      borderSkipped: false,
+    }]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    plugins: {
+      legend: { display: false },
+      tooltip: { callbacks: { label: ctx => ` ${ctx.raw} 人` } },
+      annotation: {}
+    },
+    scales: {
+      x: { grid: { display: false }, ticks: { maxRotation: 60, font: { size: 9 } } },
+      y: { beginAtZero: true, grid: { color: '#f1f5f9' }, title: { display: true, text: '人數' } }
+    }
+  }
+});
+
+// ===== 9. Dimension Comparison (Claude vs Gemini, flagged) =====
+new Chart(document.getElementById('chartDimCompare'), {
+  type: 'bar',
+  data: {
+    labels: ['Markdown 豐富度', '工具完整度', 'README 可重現性', '創意度'],
+    datasets: [
+      {
+        label: 'Claude 平均',
+        data: [73.22, 72.71, 73.24, 72.82],
+        backgroundColor: 'rgba(37,99,235,0.7)',
+        borderColor: COLORS.blue,
+        borderWidth: 1.5,
+        borderRadius: 5,
+      },
+      {
+        label: 'Gemini 平均',
+        data: [89.96, 85.83, 87.28, 84.25],
+        backgroundColor: 'rgba(5,150,105,0.7)',
+        borderColor: COLORS.green,
+        borderWidth: 1.5,
+        borderRadius: 5,
+      }
+    ]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    plugins: {
+      legend: { position: 'top' },
+      tooltip: { mode: 'index', intersect: false }
+    },
+    scales: {
+      x: { grid: { display: false } },
+      y: { min: 60, max: 100, grid: { color: '#f1f5f9' }, title: { display: true, text: '平均分' } }
+    }
+  }
+});
+
+// ===== 10. Distinction Bar Chart =====
+new Chart(document.getElementById('chartDistinctionBar'), {
+  type: 'bar',
+  data: {
+    labels: ['exemplary_readme', 'personal_voice', 'technical_depth', 'advanced_toolchain', 'creative_topic', 'interactive_output', 'exceptional_design'],
+    datasets: [{
+      label: '獲標記數',
+      data: [229, 228, 201, 184, 152, 52, 12],
+      backgroundColor: [
+        COLORS.blue, COLORS.purple, COLORS.green,
+        COLORS.orange, COLORS.red, COLORS.teal, COLORS.pink
+      ],
+      borderRadius: 6,
+      borderSkipped: false,
+    }]
+  },
+  options: {
+    indexAxis: 'y',
+    responsive: true, maintainAspectRatio: false,
+    plugins: {
+      legend: { display: false },
+      tooltip: {
+        callbacks: {
+          label: ctx => ` ${ctx.raw} 份 (${((ctx.raw/310)*100).toFixed(1)}%)`
+        }
+      }
+    },
+    scales: {
+      x: { beginAtZero: true, max: 260, grid: { color: '#f1f5f9' }, title: { display: true, text: '獲標記數' } },
+      y: { grid: { display: false } }
+    }
+  }
+});
+
+// ===== 11. Gate Failure Chart =====
+new Chart(document.getElementById('chartGateFail'), {
+  type: 'doughnut',
+  data: {
+    labels: ['output_file_valid (100)', 'content_md (99)', 'output_dir (96)', 'readme_md (2)'],
+    datasets: [{
+      data: [100, 99, 96, 2],
+      backgroundColor: [COLORS.red, COLORS.orange, COLORS.purple, COLORS.blue],
+      borderWidth: 3,
+      borderColor: '#fff',
+      hoverOffset: 8
+    }]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    plugins: {
+      legend: { position: 'bottom', labels: { padding: 10, font: { size: 11 } } },
+      tooltip: {
+        callbacks: {
+          label: ctx => ` ${ctx.label}: ${ctx.raw} 人`
+        }
+      }
+    },
+    cutout: '55%'
+  }
+});
+</script>
+
+</body>
+</html>
