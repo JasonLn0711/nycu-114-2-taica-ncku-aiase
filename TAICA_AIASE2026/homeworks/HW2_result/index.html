@@ -1,0 +1,861 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AIASE2026 HW2 評分分析報告</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+  :root {
+    --primary: #2563eb;
+    --primary-dark: #1d4ed8;
+    --secondary: #7c3aed;
+    --accent: #0891b2;
+    --success: #059669;
+    --warning: #d97706;
+    --danger: #dc2626;
+    --pink: #db2777;
+    --teal: #14b8a6;
+    --bg: #f8fafc;
+    --card-bg: #ffffff;
+    --text: #1e293b;
+    --text-muted: #64748b;
+    --border: #e2e8f0;
+    --shadow: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06);
+    --shadow-lg: 0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -2px rgba(0,0,0,0.05);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Segoe UI', 'PingFang TC', 'Microsoft JhengHei', sans-serif;
+    background: var(--bg); color: var(--text); line-height: 1.6;
+  }
+  .site-header {
+    background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 50%, #7c3aed 100%);
+    color: white; padding: 3rem 2rem 2rem; text-align: center;
+    position: relative; overflow: hidden;
+  }
+  .site-header::before {
+    content: ''; position: absolute; top: -50%; left: -50%;
+    width: 200%; height: 200%;
+    background: radial-gradient(circle, rgba(255,255,255,0.05) 0%, transparent 60%);
+    animation: pulse 8s ease-in-out infinite;
+  }
+  @keyframes pulse { 0%,100%{transform:scale(1);} 50%{transform:scale(1.1);} }
+  .site-header h1 { font-size: 2.2rem; font-weight: 800; letter-spacing: -0.5px; position: relative; }
+  .site-header .subtitle { font-size: 1rem; opacity: 0.85; margin-top: 0.5rem; position: relative; }
+  .badge-row { display: flex; gap: 0.75rem; justify-content: center; margin-top: 1.25rem; flex-wrap: wrap; position: relative; }
+  .badge {
+    background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.3);
+    border-radius: 999px; padding: 0.3rem 1rem; font-size: 0.82rem; font-weight: 600;
+    backdrop-filter: blur(4px);
+  }
+  .toc-nav {
+    background: var(--card-bg); border-bottom: 1px solid var(--border);
+    padding: 0; position: sticky; top: 0; z-index: 100; box-shadow: var(--shadow);
+  }
+  .toc-nav ul { display: flex; list-style: none; overflow-x: auto; padding: 0 1rem; gap: 0; scrollbar-width: none; }
+  .toc-nav ul::-webkit-scrollbar { display: none; }
+  .toc-nav a {
+    display: block; padding: 1rem 1.1rem; text-decoration: none; color: var(--text-muted);
+    font-size: 0.85rem; font-weight: 500; white-space: nowrap;
+    border-bottom: 3px solid transparent; transition: all 0.2s;
+  }
+  .toc-nav a:hover { color: var(--primary); border-bottom-color: var(--primary); }
+  .container { max-width: 1280px; margin: 0 auto; padding: 2rem 1.5rem; }
+  .section { margin-bottom: 3rem; }
+  .section-title {
+    font-size: 1.5rem; font-weight: 700; color: var(--text);
+    margin-bottom: 1.5rem; padding-bottom: 0.75rem;
+    border-bottom: 3px solid var(--primary);
+    display: flex; align-items: center; gap: 0.6rem;
+  }
+  .section-title .icon { font-size: 1.4rem; }
+  .card {
+    background: var(--card-bg); border-radius: 12px; padding: 1.5rem;
+    box-shadow: var(--shadow); border: 1px solid var(--border);
+  }
+  .card-title {
+    font-size: 0.8rem; font-weight: 600; color: var(--text-muted);
+    margin-bottom: 1rem; text-transform: uppercase; letter-spacing: 0.05em;
+  }
+  .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem; }
+  .stat-card {
+    background: var(--card-bg); border-radius: 12px; padding: 1.25rem 1.5rem;
+    box-shadow: var(--shadow); border: 1px solid var(--border); text-align: center;
+    transition: transform 0.2s, box-shadow 0.2s;
+  }
+  .stat-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-lg); }
+  .stat-card .value { font-size: 2rem; font-weight: 800; line-height: 1.1; }
+  .stat-card .label { font-size: 0.8rem; color: var(--text-muted); margin-top: 0.3rem; font-weight: 500; }
+  .stat-card .sub { font-size: 0.75rem; color: var(--text-muted); margin-top: 0.2rem; }
+  .stat-blue .value { color: var(--primary); }
+  .stat-green .value { color: var(--success); }
+  .stat-red .value { color: var(--danger); }
+  .stat-purple .value { color: var(--secondary); }
+  .stat-orange .value { color: var(--warning); }
+  .stat-teal .value { color: var(--accent); }
+  .stat-pink .value { color: var(--pink); }
+  .chart-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(480px, 1fr)); gap: 1.5rem; }
+  .chart-grid-3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 1.5rem; }
+  .chart-full { grid-column: 1 / -1; }
+  .chart-wrap { position: relative; height: 320px; }
+  .chart-wrap-lg { position: relative; height: 400px; }
+  .chart-wrap-sm { position: relative; height: 260px; }
+  .table-wrap { overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+  th {
+    background: linear-gradient(135deg, var(--primary), var(--secondary));
+    color: white; padding: 0.75rem 1rem; text-align: left; font-weight: 600;
+    font-size: 0.82rem; text-transform: uppercase; letter-spacing: 0.04em;
+  }
+  td { padding: 0.7rem 1rem; border-bottom: 1px solid var(--border); }
+  tr:hover td { background: #f1f5f9; }
+  tr:last-child td { border-bottom: none; }
+  .progress-bar-wrap { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.6rem; }
+  .progress-label { font-size: 0.82rem; font-weight: 600; min-width: 160px; color: var(--text); }
+  .progress-track { flex: 1; background: #e2e8f0; border-radius: 999px; height: 10px; overflow: hidden; }
+  .progress-fill { height: 100%; border-radius: 999px; transition: width 1s ease; }
+  .progress-count { font-size: 0.8rem; color: var(--text-muted); min-width: 80px; text-align: right; }
+  .alert {
+    border-radius: 10px; padding: 1rem 1.25rem; margin-bottom: 1rem;
+    border-left: 4px solid; font-size: 0.9rem;
+  }
+  .alert-info { background: #eff6ff; border-color: var(--primary); color: #1e40af; }
+  .alert-warning { background: #fffbeb; border-color: var(--warning); color: #92400e; }
+  .alert-success { background: #f0fdf4; border-color: var(--success); color: #065f46; }
+  .alert-danger { background: #fef2f2; border-color: var(--danger); color: #991b1b; }
+  .alert strong { font-weight: 700; }
+  .insight-list { list-style: none; }
+  .insight-list li {
+    padding: 0.6rem 0; border-bottom: 1px solid var(--border);
+    font-size: 0.9rem; display: flex; gap: 0.6rem; align-items: flex-start;
+  }
+  .insight-list li:last-child { border-bottom: none; }
+  .insight-list .dot { width: 8px; height: 8px; border-radius: 50%; margin-top: 0.45rem; flex-shrink: 0; }
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
+  @media (max-width: 768px) {
+    .two-col { grid-template-columns: 1fr; }
+    .chart-grid, .chart-grid-3 { grid-template-columns: 1fr; }
+    .site-header h1 { font-size: 1.5rem; }
+    .stats-grid { grid-template-columns: repeat(2, 1fr); }
+  }
+  .site-footer {
+    background: #1e293b; color: #94a3b8; text-align: center;
+    padding: 2rem; font-size: 0.82rem; margin-top: 3rem;
+  }
+  .site-footer strong { color: #e2e8f0; }
+  .anchor { scroll-margin-top: 60px; }
+</style>
+</head>
+<body>
+
+<header class="site-header">
+  <h1>📊 AIASE2026 HW2 評分分析報告</h1>
+  <p class="subtitle">Spec-Driven Development v1.0 → v2.0 — 雙階段規格優化實作 完整評分統計</p>
+  <div class="badge-row">
+    <span class="badge">🎓 總學生數：607</span>
+    <span class="badge">🤖 雙模型評分：607 (100.0%)</span>
+    <span class="badge">📈 平均分：90.12</span>
+    <span class="badge">⭐ 高分專案：463</span>
+    <span class="badge">🔎 需人工覆核：17</span>
+  </div>
+</header>
+
+<nav class="toc-nav">
+  <ul>
+    <li><a href="#overview">📋 總覽摘要</a></li>
+    <li><a href="#distribution">📊 分數分布</a></li>
+    <li><a href="#dimensions">🔍 面向分析</a></li>
+    <li><a href="#model-compare">🤖 模型比較</a></li>
+    <li><a href="#taxonomy">🏷️ 類別分佈</a></li>
+    <li><a href="#distinction">⭐ 特色專案</a></li>
+    <li><a href="#issues">⚠️ 常見問題</a></li>
+    <li><a href="#human-review">🔎 人工覆核</a></li>
+    <li><a href="#methodology">⚖️ 評分方法</a></li>
+  </ul>
+</nav>
+
+<main class="container">
+
+  <!-- ===== SECTION 1: OVERVIEW ===== -->
+  <section class="section anchor" id="overview">
+    <h2 class="section-title"><span class="icon">📋</span>總覽摘要</h2>
+
+    <div class="stats-grid" style="margin-bottom:1.5rem;">
+      <div class="stat-card stat-blue">
+        <div class="value">607</div>
+        <div class="label">總學生數</div>
+        <div class="sub">完成評分</div>
+      </div>
+      <div class="stat-card stat-green">
+        <div class="value">607</div>
+        <div class="label">雙模型齊全</div>
+        <div class="sub">覆蓋率 100.0%</div>
+      </div>
+      <div class="stat-card stat-orange">
+        <div class="value">0</div>
+        <div class="label">單模型評分</div>
+        <div class="sub">另一側 JSON 解析失敗</div>
+      </div>
+      <div class="stat-card stat-red">
+        <div class="value">48</div>
+        <div class="label">檔案不齊全</div>
+        <div class="sub">佔 7.9%</div>
+      </div>
+      <div class="stat-card stat-purple">
+        <div class="value">90.12</div>
+        <div class="label">平均分</div>
+        <div class="sub">Rescaled [60–100]</div>
+      </div>
+      <div class="stat-card stat-teal">
+        <div class="value">93.12</div>
+        <div class="label">中位數</div>
+        <div class="sub">Q1=90.25 / Q3=94.39</div>
+      </div>
+      <div class="stat-card stat-pink">
+        <div class="value">463</div>
+        <div class="label">高分（≥ 90）</div>
+        <div class="sub">佔 76.3%</div>
+      </div>
+      <div class="stat-card stat-red">
+        <div class="value">49</div>
+        <div class="label">v1/ 逾期改動</div>
+        <div class="sub">v1/ 逾期改動（已記錄供人工審閱）</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">執行架構</div>
+      <p style="color: var(--text-muted); font-size: 0.9rem; line-height: 1.8;">
+        HW2 採用 <strong>三層 LLM 分工</strong>與<strong>雙模型盲評</strong>機制。<br>
+        ① <strong>Haiku 4.5</strong> 對每位學生的 README + v1/sdd_v1 做結構化摘要（607 次廉價 pass）；<br>
+        ② <strong>Opus 4.7</strong> 從全班摘要一次性建立 taxonomy 與跨面向統計；<br>
+        ③ <strong>Sonnet 4.6 + GPT-5.4 mini</strong> 平行盲評 Phase 1 與 Phase 2，每位學生 × 2 phases × 2 models = 4 次評分呼叫；<br>
+        ④ <strong>Opus 4.7</strong> 產生全班分析報告 narrative。整體以 Anthropic + OpenAI Batch API 批次送出以取得約 50% 折扣。
+      </p>
+    </div>
+  </section>
+
+  <!-- ===== SECTION 2: DISTRIBUTION ===== -->
+  <section class="section anchor" id="distribution">
+    <h2 class="section-title"><span class="icon">📊</span>分數分布</h2>
+
+    <div class="chart-grid">
+      <div class="card">
+        <div class="card-title">📈 Rescaled 最終分數直方圖（[60, 100]，N = 607）</div>
+        <div class="chart-wrap"><canvas id="chartFinalHist"></canvas></div>
+        <p style="margin-top:0.75rem; color: var(--text-muted); font-size: 0.85rem;">
+          μ = 90.12 ／ median = 93.12 ／ σ = 8.29 ／ range = [60.14, 96.88]
+        </p>
+      </div>
+      <div class="card">
+        <div class="card-title">📊 原始加權總分直方圖（0–105 分，未 rescale）</div>
+        <div class="chart-wrap"><canvas id="chartRawHist"></canvas></div>
+        <p style="margin-top:0.75rem; color: var(--text-muted); font-size: 0.85rem;">
+          μ = 79.06 ／ median = 86.95 ／ σ = 21.76 ／ range = [0.38, 96.8]
+        </p>
+      </div>
+    </div>
+
+    <div class="alert alert-info" style="margin-top:1.5rem;">
+      <strong>觀察</strong>：分數分佈明顯<strong>右偏</strong>，多數學生集中在 85 分以上區段。最低分來自完全空白或嚴重缺件的 repository；前段學生則多能將 v1→v2 的 schema 演進、atomic write、Adapter / Strategy pattern 等前瞻設計一併在 README 與 sdd_v2 中論述。
+    </div>
+  </section>
+
+  <!-- ===== SECTION 3: DIMENSIONS ===== -->
+  <section class="section anchor" id="dimensions">
+    <h2 class="section-title"><span class="icon">🔍</span>面向分析</h2>
+
+    <div class="chart-grid">
+      <div class="card">
+        <div class="card-title">🎯 七面向雷達圖（全體平均）</div>
+        <div class="chart-wrap-lg"><canvas id="chartRadar"></canvas></div>
+      </div>
+      <div class="card">
+        <div class="card-title">📏 各面向 IQR 與中位數</div>
+        <div class="chart-wrap-lg"><canvas id="chartBoxplot"></canvas></div>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:1.5rem;">
+      <div class="card-title">📋 各面向統計</div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>面向</th><th>權重</th><th>Mean</th><th>Median</th><th>σ</th><th>Min</th><th>Max</th><th>Q25</th><th>Q75</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>創新度 (15%)</strong></td><td>15</td><td>59.74</td><td>63.0</td><td>18.69</td><td>2.5</td><td>90.5</td><td>52.0</td><td>73.0</td></tr><tr><td><strong>SDD v1 品質 (10%)</strong></td><td>10</td><td>75.77</td><td>81.0</td><td>19.36</td><td>0.0</td><td>95.0</td><td>76.0</td><td>86.0</td></tr><tr><td><strong>細節完成度 (5%)</strong></td><td>5</td><td>70.59</td><td>77.0</td><td>19.89</td><td>0.0</td><td>91.5</td><td>68.5</td><td>83.0</td></tr><tr><td><strong>需求匹配 (20%)</strong></td><td>20</td><td>82.1</td><td>91.0</td><td>24.61</td><td>0.0</td><td>98.0</td><td>85.0</td><td>93.5</td></tr><tr><td><strong>v2 完整度 (20%)</strong></td><td>20</td><td>77.57</td><td>88.0</td><td>25.0</td><td>0.0</td><td>98.5</td><td>78.0</td><td>91.5</td></tr><tr><td><strong>向下相容 (20%)</strong></td><td>20</td><td>84.37</td><td>92.5</td><td>22.66</td><td>0.0</td><td>97.5</td><td>86.5</td><td>95.0</td></tr><tr><td><strong>驚喜度 (15%)</strong></td><td>15</td><td>67.88</td><td>77.0</td><td>22.97</td><td>0.0</td><td>89.0</td><td>68.0</td><td>80.0</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="chart-grid-3" style="margin-top:1.5rem;">
+      <div class="card"><div class="card-title">創新度 (15%)</div><div class="chart-wrap-sm"><canvas id="chartDim_innovation"></canvas></div></div><div class="card"><div class="card-title">SDD v1 品質 (10%)</div><div class="chart-wrap-sm"><canvas id="chartDim_sdd_v1_quality"></canvas></div></div><div class="card"><div class="card-title">細節完成度 (5%)</div><div class="chart-wrap-sm"><canvas id="chartDim_detail_completeness"></canvas></div></div><div class="card"><div class="card-title">需求匹配 (20%)</div><div class="chart-wrap-sm"><canvas id="chartDim_req_match"></canvas></div></div><div class="card"><div class="card-title">v2 完整度 (20%)</div><div class="chart-wrap-sm"><canvas id="chartDim_completeness"></canvas></div></div><div class="card"><div class="card-title">向下相容 (20%)</div><div class="chart-wrap-sm"><canvas id="chartDim_backward_compat"></canvas></div></div><div class="card"><div class="card-title">驚喜度 (15%)</div><div class="chart-wrap-sm"><canvas id="chartDim_surprise"></canvas></div></div>
+    </div>
+  </section>
+
+  <!-- ===== SECTION 4: MODEL COMPARE ===== -->
+  <section class="section anchor" id="model-compare">
+    <h2 class="section-title"><span class="icon">🤖</span>雙模型比較（Sonnet 4.6 vs GPT-5.4 mini）</h2>
+
+    <div class="stats-grid" style="margin-bottom:1.5rem;">
+      <div class="stat-card stat-blue">
+        <div class="value">607</div>
+        <div class="label">雙模型齊全</div>
+        <div class="sub">可做一致性分析</div>
+      </div>
+      <div class="stat-card stat-red">
+        <div class="value">17</div>
+        <div class="label">高分歧（|Δ| ≥ 20）</div>
+        <div class="sub">佔 2.8%，列入人工覆核</div>
+      </div>
+      <div class="stat-card stat-green">
+        <div class="value">-7.4</div>
+        <div class="label">Δ 中位數</div>
+        <div class="sub">σ = 6.6</div>
+      </div>
+      <div class="stat-card stat-purple">
+        <div class="value">75.55</div>
+        <div class="label">Sonnet 平均</div>
+        <div class="sub">raw_weighted (0–105)</div>
+      </div>
+      <div class="stat-card stat-orange">
+        <div class="value">82.56</div>
+        <div class="label">GPT 平均</div>
+        <div class="sub">raw_weighted (0–105)</div>
+      </div>
+    </div>
+
+    <div class="chart-grid">
+      <div class="card">
+        <div class="card-title">📊 雙模型分數差（Sonnet − GPT）直方圖</div>
+        <div class="chart-wrap"><canvas id="chartDiffHist"></canvas></div>
+      </div>
+      <div class="card">
+        <div class="card-title">📐 各面向：Sonnet vs GPT 平均差異</div>
+        <div class="chart-wrap"><canvas id="chartDimCompare"></canvas></div>
+      </div>
+    </div>
+
+    <div class="alert alert-warning" style="margin-top:1.5rem;">
+      <strong>觀察</strong>：雙模型<strong>總分差中位數約 -7.4</strong>，大多數分歧落在 innovation 與 surprise 兩個最主觀的面向；結構化面向（completeness / backward_compat）兩模型一致性較高。17 筆高分歧案例已寫入 <code>_grade_review_index.md</code> 供助教人工覆核。
+    </div>
+  </section>
+
+  <!-- ===== SECTION 5: TAXONOMY ===== -->
+  <section class="section anchor" id="taxonomy">
+    <h2 class="section-title"><span class="icon">🏷️</span>類別分佈 (Taxonomy by Opus 4.7)</h2>
+
+    <div class="card" style="margin-bottom:1.5rem;">
+      <div class="card-title">類別分佈（依人數）</div>
+      <div class="chart-wrap-lg"><canvas id="chartCategoryBar"></canvas></div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">類別 × 平均分數</div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>類別</th><th>人數</th><th>平均分</th><th>中位數</th></tr></thead>
+          <tbody>
+            <tr><td><strong>個人理財 / 投資</strong></td><td>159</td><td>90.44</td><td>92.63</td></tr><tr><td><strong>任務管理</strong></td><td>111</td><td>91.02</td><td>92.81</td></tr><tr><td><strong>開發者工具</strong></td><td>52</td><td>92.41</td><td>93.65</td></tr><tr><td><strong>領域工具</strong></td><td>48</td><td>91.19</td><td>93.3</td></tr><tr><td><strong>健身 / 健康</strong></td><td>47</td><td>92.34</td><td>93.66</td></tr><tr><td><strong>字卡 / 學習</strong></td><td>35</td><td>92.01</td><td>93.43</td></tr><tr><td><strong>筆記 / 書籤</strong></td><td>33</td><td>92.12</td><td>93.79</td></tr><tr><td><strong>文字分析</strong></td><td>26</td><td>91.6</td><td>93.89</td></tr><tr><td><strong>遊戲</strong></td><td>24</td><td>93.21</td><td>93.79</td></tr><tr><td><strong>資料轉換</strong></td><td>20</td><td>91.71</td><td>92.88</td></tr><tr><td><strong>媒體處理</strong></td><td>13</td><td>91.89</td><td>92.1</td></tr><tr><td><strong>密碼管理</strong></td><td>6</td><td>93.41</td><td>93.73</td></tr><tr><td><strong>寵物照護</strong></td><td>2</td><td>92.24</td><td>92.24</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="alert alert-info" style="margin-top:1rem;">
+      Opus 4.7 以 map-reduce 對全班 607 份摘要建立 <strong>13 個 primary 類別</strong>，其中 finance_tool / tasks_manager 為本屆最大宗，合計超過 40%。
+    </div>
+  </section>
+
+  <!-- ===== SECTION 6: DISTINCTION ===== -->
+  <section class="section anchor" id="distinction">
+    <h2 class="section-title"><span class="icon">⭐</span>特色專案</h2>
+
+    <div class="stats-grid" style="margin-bottom:1.5rem;">
+      <div class="stat-card stat-purple">
+        <div class="value">463</div>
+        <div class="label">rescaled ≥ 90</div>
+        <div class="sub">佔 76.3%</div>
+      </div>
+      <div class="stat-card stat-pink">
+        <div class="value">39</div>
+        <div class="label">平均 surprise ≥ 85</div>
+        <div class="sub">超出作業要求的亮點設計</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">特色專案典型特徵（彙整自 report narrative）</div>
+      <ul class="insight-list">
+        <li><span class="dot" style="background:var(--primary);"></span>完整的 Repository Pattern / Strategy / Adapter 抽象層，v1→v2 schema 演進有清楚遷移策略</li>
+        <li><span class="dot" style="background:var(--secondary);"></span>測試策略具深度：單元測試 + 屬性測試 (hypothesis) + 邊界 case</li>
+        <li><span class="dot" style="background:var(--success);"></span>README 有<strong>設計決策</strong>、<strong>trade-off 討論</strong>、<strong>未來 v3 方向</strong>三大敘述段落</li>
+        <li><span class="dot" style="background:var(--warning);"></span>額外加入 TUI（rich/textual）、SQLite 遷移、atomic write、可觀測性指標等作業沒要求但你自己做了的延伸</li>
+        <li><span class="dot" style="background:var(--accent);"></span>sdd_v2 的 Mermaid 圖不只兩種，而是針對多個核心功能獨立繪製 sequence / flowchart</li>
+        <li><span class="dot" style="background:var(--pink);"></span>向下相容性章節具體列出每個 v1 指令的遷移行為與例外處理</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- ===== SECTION 7: ISSUES ===== -->
+  <section class="section anchor" id="issues">
+    <h2 class="section-title"><span class="icon">⚠️</span>常見問題</h2>
+
+    <div class="chart-grid">
+      <div class="card">
+        <div class="card-title">🚫 檔案缺失統計</div>
+        <div class="chart-wrap"><canvas id="chartMissing"></canvas></div>
+      </div>
+      <div class="card">
+        <div class="card-title">⏰ v1/ 逾期改動（已記錄供人工審閱）</div>
+        <div style="padding: 2rem 1rem; text-align:center;">
+          <div style="font-size: 4rem; font-weight: 800; color: var(--warning);">49</div>
+          <div style="font-size: 0.95rem; color: var(--text-muted); margin-top: 0.5rem;">
+            位學生在 v1.0 截止後仍修改 <code>v1/</code> 資料夾<br>
+            此紀錄會<strong>保留供老師 / 助教審閱</strong>，分數仍依實際 v2 對 v1 介面相容性評估
+          </div>
+          <div style="margin-top:1rem; font-size: 0.82rem; color: var(--text-muted);">
+            佔總人數 8.1%；有部分可能為 rebase / 空改 / 格式變更，實質後續修改則由助教再依情況調整。
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:1.5rem;">
+      <div class="card-title">📉 全班常見 anti-pattern（由 Opus 4.7 narrative 彙整）</div>
+      <ul class="insight-list">
+        <li><span class="dot" style="background:var(--danger);"></span>整個 repo 幾乎空白（僅 README 數字，無 sdd_v1 / main.py）</li>
+        <li><span class="dot" style="background:var(--warning);"></span>JSON 單檔無並發寫入保護與 rollback 機制</li>
+        <li><span class="dot" style="background:var(--warning);"></span>外部 API 依賴易斷線且缺降級 / 快取策略</li>
+        <li><span class="dot" style="background:var(--primary);"></span>sdd_v1.md 六大章節不齊全（尤其缺錯誤處理與測試案例）</li>
+        <li><span class="dot" style="background:var(--secondary);"></span>v2 實作功能齊全但未更新 sdd_v2.md — SDD 文件與程式 drift</li>
+        <li><span class="dot" style="background:var(--accent);"></span>向下相容章節僅表列「完全相容」而未說明遷移策略</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- ===== SECTION 8: GRADING TRANSPARENCY ===== -->
+  <section class="section anchor" id="human-review">
+    <h2 class="section-title"><span class="icon">🔎</span>評分透明度</h2>
+
+    <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 1.25rem; line-height: 1.8;">
+      為了讓評分盡量公正，系統會自動標記以下幾種<strong>需要更多判讀</strong>的情境。這些案例的最終分數會經過人工複核後才定案，目的是避免單一模型的偏差或規則判定造成誤判。
+    </p>
+
+    <div class="stats-grid" style="margin-bottom:1.5rem;">
+      <div class="stat-card stat-red">
+        <div class="value">17</div>
+        <div class="label">兩模型高度分歧</div>
+        <div class="sub">|Sonnet − GPT| ≥ 20 分</div>
+      </div>
+      <div class="stat-card stat-orange">
+        <div class="value">49</div>
+        <div class="label">v1/ 逾期改動</div>
+        <div class="sub">v1/ 逾期改動（已記錄供人工審閱）</div>
+      </div>
+      <div class="stat-card stat-purple">
+        <div class="value">3</div>
+        <div class="label">README 缺失</div>
+        <div class="sub">退回 sdd_v1 推斷</div>
+      </div>
+      <div class="stat-card stat-teal">
+        <div class="value">63</div>
+        <div class="label">類別判讀分歧</div>
+        <div class="sub">兩模型選出不同 primary</div>
+      </div>
+    </div>
+
+    <div class="alert alert-info">
+      <strong>為什麼需要兩個模型 + 人工複核？</strong>
+      創新度（innovation）與驚喜度（surprise）這兩個最主觀的面向，本來就容易因模型偏好造成分歧——本屆兩模型總分差中位數約 -7.4 分，主要差異就集中在這兩欄。用「Sonnet 4.6 × GPT-5.4-mini」兩家不同家族的模型做盲評，搭配差距超過 20 分就強制進入人工複核，是為了降低單一模型偏差對你分數的影響。
+    </div>
+  </section>
+
+  <!-- ===== SECTION 9: METHODOLOGY ===== -->
+  <section class="section anchor" id="methodology">
+    <h2 class="section-title"><span class="icon">⚖️</span>評分方法論</h2>
+
+    <div class="two-col">
+      <div class="card">
+        <div class="card-title">面向權重（每項 0–100 分）</div>
+        <table>
+          <thead><tr><th>面向</th><th>權重</th><th>Phase</th></tr></thead>
+          <tbody>
+            <tr><td><strong>創新度 (15%)</strong></td><td>15</td><td>Phase 1</td></tr><tr><td><strong>SDD v1 品質 (10%)</strong></td><td>10</td><td>Phase 1</td></tr><tr><td><strong>細節完成度 (5%)</strong></td><td>5</td><td>Phase 1</td></tr><tr><td><strong>需求匹配 (20%)</strong></td><td>20</td><td>Phase 2</td></tr><tr><td><strong>v2 完整度 (20%)</strong></td><td>20</td><td>Phase 2</td></tr><tr><td><strong>向下相容 (20%)</strong></td><td>20</td><td>Phase 2</td></tr><tr><td><strong>驚喜度 (15%)</strong></td><td>15</td><td>Phase 2</td></tr>
+            <tr style="font-weight:700; background: #f1f5f9;"><td>總權重</td><td>105</td><td>(Phase 1 小計 30 / Phase 2 小計 75)</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="card">
+        <div class="card-title">融合公式</div>
+        <pre style="background: #0f172a; color: #e2e8f0; padding: 1rem; border-radius: 8px; overflow-x: auto; font-size: 0.82rem; line-height: 1.6;"># 每個面向由模型給 0–100 分
+raw_weighted_per_model = Σ(weights[k] × score[k] / 100)
+                       # ∈ [0, 105]
+
+# 雙模型融合
+final_raw = 0.5 × sonnet.raw + 0.5 × gpt.raw
+
+# Rescale 到 [60, 100]
+rescaled = 60 + (final_raw / 105) × 40</pre>
+        <p style="margin-top:1rem; color: var(--text-muted); font-size: 0.85rem;">
+          <strong>v1/ 逾期改動</strong>：若系統偵測到 <code>v1/</code> 在截止後仍有 commit，flag 會保留供老師 / 助教審閱，並不會自動把 <code>backward_compat</code> 歸 0；分數仍依模型對學生 v2 實作的客觀評估為準。<br>
+          <strong>Surprise 上限拉高到 15</strong>（原 HW2.md 規劃 1–5 分人工抽查 bonus 併入此面向）。
+        </p>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:1.5rem;">
+      <div class="card-title">模型分工</div>
+      <table>
+        <thead><tr><th>階段</th><th>模型</th><th>呼叫數</th><th>理由</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><strong>Summarize</strong></td>
+            <td><code>claude-haiku-4-5-20251001</code></td>
+            <td>607 (batch)</td>
+            <td>每生一份結構化摘要；Haiku 最廉價且足夠精準</td>
+          </tr>
+          <tr>
+            <td><strong>Taxonomy</strong></td>
+            <td><code>claude-opus-4-7</code></td>
+            <td>1（map-reduce）</td>
+            <td>需全局視野建立類別學 + 多面向統計；只跑 Opus 一次</td>
+          </tr>
+          <tr>
+            <td><strong>Score A</strong></td>
+            <td><code>claude-sonnet-4-6</code></td>
+            <td>607 × 2 = 1214 (batch)</td>
+            <td>Phase 1 + Phase 2 評分；Sonnet 品質與成本平衡</td>
+          </tr>
+          <tr>
+            <td><strong>Score B</strong></td>
+            <td><code>gpt-5.4-mini</code></td>
+            <td>607 × 2 = 1214 (batch)</td>
+            <td>獨立盲評作為交叉驗證；不同家族模型降低單模型偏差</td>
+          </tr>
+          <tr>
+            <td><strong>Report Narrative</strong></td>
+            <td><code>claude-opus-4-7</code></td>
+            <td>1</td>
+            <td>Executive Summary + 各類別 narrative + anti-patterns 彙整</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="alert alert-success" style="margin-top:1.5rem;">
+      <strong>成本優化</strong>：所有大量呼叫（summarize、score × 2 providers）均走 Anthropic Message Batches API 與 OpenAI Batch API，享 ~50% 折扣；taxonomy 與 report narrative 單次呼叫走 sync。
+    </div>
+
+    <div class="card" style="margin-top:1.5rem;">
+      <div class="card-title">💰 實際執行成本</div>
+      <div class="stats-grid" style="margin-bottom:0;">
+        <div class="stat-card stat-purple">
+          <div class="value">US$11</div>
+          <div class="label">OpenAI API</div>
+          <div class="sub">GPT-5.4 mini（score × 2 phase）</div>
+        </div>
+        <div class="stat-card stat-orange">
+          <div class="value">US$65</div>
+          <div class="label">Anthropic API</div>
+          <div class="sub">Haiku + Opus + Sonnet 加總</div>
+        </div>
+        <div class="stat-card stat-green">
+          <div class="value">US$76</div>
+          <div class="label">總計</div>
+          <div class="sub">對應 ~3049 次 LLM 呼叫</div>
+        </div>
+      </div>
+      <p style="color: var(--text-muted); font-size: 0.85rem; margin-top:1rem; line-height: 1.8;">
+        細項構成：Haiku 4.5 做 607 次 summarize，Opus 4.7 做 taxonomy（13 map + 1 reduce）與 report narrative 各 1 次，Sonnet 4.6 做 1214 次評分（Phase 1 + Phase 2），GPT-5.4 mini 做 1214 次評分（同樣 Phase 1 + Phase 2，加上一次補救性 sync rescore）。大宗 LLM 呼叫走 batch 模式享 50% 折扣——同樣流量若全走 sync，成本會翻倍到 ~US$150 左右。
+      </p>
+    </div>
+  </section>
+
+</main>
+
+<footer class="site-footer">
+  <p><strong>AIASE2026 HW2 評分分析報告</strong></p>
+  <p style="margin-top:0.5rem;">本頁呈現全班匿名化統計，不列出個別學生 github_id。個人分數請查看 GitHub Classroom 回饋。</p>
+  <p style="margin-top:0.5rem; opacity:0.8;">生成時間：2026-04-22T14:08:29.170903+00:00</p>
+</footer>
+
+<script>
+const COLORS = {
+  blue: '#2563eb', purple: '#7c3aed', green: '#059669',
+  orange: '#d97706', red: '#dc2626', teal: '#14b8a6',
+  pink: '#db2777'
+};
+
+// ===== Final score histogram =====
+new Chart(document.getElementById('chartFinalHist'), {
+  type: 'bar',
+  data: {
+    labels: ["60-62", "62-64", "64-66", "66-68", "68-70", "70-72", "72-74", "74-76", "76-78", "78-80", "80-82", "82-84", "84-86", "86-88", "88-90", "90-92", "92-94", "94-96", "96-98", "98-100"],
+    datasets: [{
+      label: '人數', data: [26, 2, 3, 2, 4, 3, 3, 4, 1, 9, 8, 11, 9, 19, 40, 75, 193, 181, 14, 0],
+      backgroundColor: COLORS.blue, borderRadius: 4, borderSkipped: false,
+    }]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    plugins: { legend: { display: false }, tooltip: { callbacks: { label: ctx => ` ${ctx.raw} 人` } } },
+    scales: {
+      x: { grid: { display: false }, ticks: { maxRotation: 45, font: { size: 10 } } },
+      y: { beginAtZero: true, grid: { color: '#f1f5f9' }, title: { display: true, text: '人數' } }
+    }
+  }
+});
+
+// ===== Raw totals histogram =====
+new Chart(document.getElementById('chartRawHist'), {
+  type: 'bar',
+  data: {
+    labels: ["0-5", "5-10", "10-16", "16-21", "21-26", "26-32", "32-37", "37-42", "42-47", "47-52", "52-58", "58-63", "63-68", "68-74", "74-79", "79-84", "84-89", "89-94", "94-100", "100-105"],
+    datasets: [{
+      label: '人數', data: [26, 2, 3, 2, 4, 3, 3, 4, 1, 9, 8, 11, 9, 19, 40, 75, 193, 181, 14, 0],
+      backgroundColor: COLORS.purple, borderRadius: 4, borderSkipped: false,
+    }]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    plugins: { legend: { display: false }, tooltip: { callbacks: { label: ctx => ` ${ctx.raw} 人` } } },
+    scales: {
+      x: { grid: { display: false }, ticks: { maxRotation: 45, font: { size: 10 } } },
+      y: { beginAtZero: true, grid: { color: '#f1f5f9' }, title: { display: true, text: '人數' } }
+    }
+  }
+});
+
+// ===== Radar =====
+new Chart(document.getElementById('chartRadar'), {
+  type: 'radar',
+  data: {
+    labels: ["\u5275\u65b0\u5ea6 (15%)", "SDD v1 \u54c1\u8cea (10%)", "\u7d30\u7bc0\u5b8c\u6210\u5ea6 (5%)", "\u9700\u6c42\u5339\u914d (20%)", "v2 \u5b8c\u6574\u5ea6 (20%)", "\u5411\u4e0b\u76f8\u5bb9 (20%)", "\u9a5a\u559c\u5ea6 (15%)"],
+    datasets: [
+      {
+        label: '全班平均', data: [59.74, 75.77, 70.59, 82.1, 77.57, 84.37, 67.88],
+        backgroundColor: 'rgba(37,99,235,0.15)', borderColor: COLORS.blue,
+        borderWidth: 2.5, pointBackgroundColor: COLORS.blue, pointRadius: 5,
+      },
+      {
+        label: '特色專案門檻 (85)', data: [85, 85, 85, 85, 85, 85, 85],
+        backgroundColor: 'rgba(5,150,105,0.05)', borderColor: COLORS.green,
+        borderWidth: 1.5, borderDash: [5, 5], pointRadius: 0,
+      }
+    ]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    plugins: { legend: { position: 'bottom' } },
+    scales: {
+      r: {
+        min: 0, max: 100, ticks: { stepSize: 20, font: { size: 10 } },
+        grid: { color: '#e2e8f0' }, pointLabels: { font: { size: 11 } }
+      }
+    }
+  }
+});
+
+// ===== Boxplot (IQR + median) =====
+new Chart(document.getElementById('chartBoxplot'), {
+  type: 'bar',
+  data: {
+    labels: ["\u5275\u65b0\u5ea6 (15%)", "SDD v1 \u54c1\u8cea (10%)", "\u7d30\u7bc0\u5b8c\u6210\u5ea6 (5%)", "\u9700\u6c42\u5339\u914d (20%)", "v2 \u5b8c\u6574\u5ea6 (20%)", "\u5411\u4e0b\u76f8\u5bb9 (20%)", "\u9a5a\u559c\u5ea6 (15%)"],
+    datasets: [
+      {
+        label: 'IQR (Q1–Q3)', data: [[52.0, 73.0], [76.0, 86.0], [68.5, 83.0], [85.0, 93.5], [78.0, 91.5], [86.5, 95.0], [68.0, 80.0]],
+        backgroundColor: [
+          'rgba(37,99,235,0.4)', 'rgba(124,58,237,0.4)', 'rgba(20,184,166,0.4)',
+          'rgba(5,150,105,0.4)', 'rgba(217,119,6,0.4)', 'rgba(220,38,38,0.4)',
+          'rgba(219,39,119,0.4)'
+        ],
+        borderWidth: 2, borderRadius: 4,
+      },
+      {
+        label: '中位數', data: [63.0, 81.0, 77.0, 91.0, 88.0, 92.5, 77.0],
+        type: 'line', borderColor: '#1e293b', backgroundColor: '#1e293b',
+        pointStyle: 'line', pointRadius: 12, pointBorderWidth: 3, showLine: false,
+      }
+    ]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    plugins: { legend: { display: true, position: 'top' } },
+    scales: {
+      x: { grid: { display: false }, ticks: { font: { size: 9.5 }, maxRotation: 35 } },
+      y: { min: 0, max: 100, grid: { color: '#f1f5f9' }, title: { display: true, text: '分數' } }
+    }
+  }
+});
+
+// ===== Per-dimension histograms =====
+function makeDimChart(id, labels, data, color) {
+  new Chart(document.getElementById(id), {
+    type: 'bar',
+    data: {
+      labels, datasets: [{
+        label: '人數', data, backgroundColor: color, borderRadius: 3, borderSkipped: false
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false }, tooltip: { callbacks: { label: ctx => ` ${ctx.raw} 人` } } },
+      scales: {
+        x: { grid: { display: false }, ticks: { maxRotation: 60, font: { size: 9 } } },
+        y: { beginAtZero: true, grid: { color: '#f1f5f9' } }
+      }
+    }
+  });
+}
+
+makeDimChart('chartDim_innovation',
+  ["0-5", "5-10", "10-15", "15-20", "20-25", "25-30", "30-35", "35-40", "40-45", "45-50", "50-55", "55-60", "60-65", "65-70", "70-75", "75-80", "80-85", "85-90", "90-95", "95-100"],
+  [12, 11, 8, 5, 9, 7, 12, 11, 18, 30, 45, 65, 84, 84, 80, 76, 39, 9, 2, 0],
+  COLORS.blue);
+makeDimChart('chartDim_sdd_v1_quality',
+  ["0-5", "5-10", "10-15", "15-20", "20-25", "25-30", "30-35", "35-40", "40-45", "45-50", "50-55", "55-60", "60-65", "65-70", "70-75", "75-80", "80-85", "85-90", "90-95", "95-100"],
+  [28, 0, 1, 0, 0, 0, 2, 2, 2, 7, 7, 14, 17, 18, 29, 126, 160, 165, 28, 1],
+  COLORS.purple);
+makeDimChart('chartDim_detail_completeness',
+  ["0-5", "5-10", "10-15", "15-20", "20-25", "25-30", "30-35", "35-40", "40-45", "45-50", "50-55", "55-60", "60-65", "65-70", "70-75", "75-80", "80-85", "85-90", "90-95", "95-100"],
+  [28, 1, 0, 0, 3, 0, 9, 4, 9, 16, 12, 15, 20, 50, 92, 123, 136, 83, 6, 0],
+  COLORS.teal);
+makeDimChart('chartDim_req_match',
+  ["0-5", "5-10", "10-15", "15-20", "20-25", "25-30", "30-35", "35-40", "40-45", "45-50", "50-55", "55-60", "60-65", "65-70", "70-75", "75-80", "80-85", "85-90", "90-95", "95-100"],
+  [39, 4, 1, 1, 0, 2, 3, 0, 1, 1, 3, 4, 2, 5, 10, 19, 47, 104, 286, 75],
+  COLORS.green);
+makeDimChart('chartDim_completeness',
+  ["0-5", "5-10", "10-15", "15-20", "20-25", "25-30", "30-35", "35-40", "40-45", "45-50", "50-55", "55-60", "60-65", "65-70", "70-75", "75-80", "80-85", "85-90", "90-95", "95-100"],
+  [39, 3, 2, 0, 2, 2, 5, 4, 9, 6, 6, 4, 14, 15, 22, 30, 59, 134, 232, 19],
+  COLORS.orange);
+makeDimChart('chartDim_backward_compat',
+  ["0-5", "5-10", "10-15", "15-20", "20-25", "25-30", "30-35", "35-40", "40-45", "45-50", "50-55", "55-60", "60-65", "65-70", "70-75", "75-80", "80-85", "85-90", "90-95", "95-100"],
+  [31, 3, 0, 1, 1, 0, 0, 0, 1, 3, 5, 4, 7, 10, 12, 17, 37, 81, 197, 197],
+  COLORS.red);
+makeDimChart('chartDim_surprise',
+  ["0-5", "5-10", "10-15", "15-20", "20-25", "25-30", "30-35", "35-40", "40-45", "45-50", "50-55", "55-60", "60-65", "65-70", "70-75", "75-80", "80-85", "85-90", "90-95", "95-100"],
+  [39, 3, 2, 5, 6, 9, 7, 7, 4, 3, 7, 15, 21, 30, 68, 155, 187, 39, 0, 0],
+  COLORS.pink);
+
+// ===== Diff histogram (Sonnet − GPT) =====
+new Chart(document.getElementById('chartDiffHist'), {
+  type: 'bar',
+  data: {
+    labels: ["-50--45", "-45--40", "-40--35", "-35--30", "-30--25", "-25--20", "-20--15", "-15--10", "-10--5", "-5-0", "0-5", "5-10", "10-15", "15-20", "20-25", "25-30", "30-35", "35-40", "40-45", "45-50"],
+    datasets: [{
+      label: '人數', data: [0, 1, 0, 3, 1, 10, 28, 129, 225, 158, 31, 13, 3, 3, 1, 0, 1, 0, 0, 0],
+      backgroundColor: ctx => {
+        const label = ctx.chart.data.labels[ctx.dataIndex];
+        const mid = label ? parseFloat(label.split('-')[0]) : 0;
+        if (Math.abs(mid) >= 20) return COLORS.red;
+        if (Math.abs(mid) >= 10) return COLORS.orange;
+        return 'rgba(37,99,235,0.7)';
+      },
+      borderRadius: 3, borderSkipped: false,
+    }]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    plugins: { legend: { display: false }, tooltip: { callbacks: { label: ctx => ` ${ctx.raw} 人` } } },
+    scales: {
+      x: { grid: { display: false }, ticks: { maxRotation: 60, font: { size: 9 } } },
+      y: { beginAtZero: true, grid: { color: '#f1f5f9' }, title: { display: true, text: '人數' } }
+    }
+  }
+});
+
+// ===== Dimension comparison: Sonnet vs GPT =====
+new Chart(document.getElementById('chartDimCompare'), {
+  type: 'bar',
+  data: {
+    labels: ["\u5275\u65b0\u5ea6 (15%)", "SDD v1 \u54c1\u8cea (10%)", "\u7d30\u7bc0\u5b8c\u6210\u5ea6 (5%)", "\u9700\u6c42\u5339\u914d (20%)", "v2 \u5b8c\u6574\u5ea6 (20%)", "\u5411\u4e0b\u76f8\u5bb9 (20%)", "\u9a5a\u559c\u5ea6 (15%)"],
+    datasets: [
+      {
+        label: 'Sonnet 4.6 平均',
+        data: [48.94, 71.26, 65.27, 83.04, 77.39, 81.08, 63.46],
+        backgroundColor: 'rgba(37,99,235,0.7)', borderColor: COLORS.blue,
+        borderWidth: 1.5, borderRadius: 5,
+      },
+      {
+        label: 'GPT-5.4 mini 平均',
+        data: [70.53, 80.28, 75.91, 81.15, 77.75, 87.66, 72.29],
+        backgroundColor: 'rgba(5,150,105,0.7)', borderColor: COLORS.green,
+        borderWidth: 1.5, borderRadius: 5,
+      }
+    ]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    plugins: { legend: { position: 'top' }, tooltip: { mode: 'index', intersect: false } },
+    scales: {
+      x: { grid: { display: false }, ticks: { font: { size: 9.5 }, maxRotation: 35 } },
+      y: { min: 0, max: 100, grid: { color: '#f1f5f9' }, title: { display: true, text: '平均分' } }
+    }
+  }
+});
+
+// ===== Category distribution bar (horizontal) =====
+new Chart(document.getElementById('chartCategoryBar'), {
+  type: 'bar',
+  data: {
+    labels: ["\u500b\u4eba\u7406\u8ca1 / \u6295\u8cc7", "\u4efb\u52d9\u7ba1\u7406", "\u958b\u767c\u8005\u5de5\u5177", "\u9818\u57df\u5de5\u5177", "\u5065\u8eab / \u5065\u5eb7", "\u5b57\u5361 / \u5b78\u7fd2", "\u7b46\u8a18 / \u66f8\u7c64", "\u6587\u5b57\u5206\u6790", "\u904a\u6232", "\u8cc7\u6599\u8f49\u63db", "\u5a92\u9ad4\u8655\u7406", "\u5bc6\u78bc\u7ba1\u7406", "\u5bf5\u7269\u7167\u8b77"],
+    datasets: [{
+      label: '人數', data: [159, 111, 52, 48, 47, 35, 33, 26, 24, 20, 13, 6, 2],
+      backgroundColor: [
+        COLORS.blue, COLORS.purple, COLORS.green, COLORS.orange,
+        COLORS.red, COLORS.teal, COLORS.pink,
+        'rgba(37,99,235,0.6)', 'rgba(124,58,237,0.6)', 'rgba(5,150,105,0.6)',
+        'rgba(217,119,6,0.6)', 'rgba(220,38,38,0.6)', 'rgba(20,184,166,0.6)', 'rgba(219,39,119,0.6)'
+      ],
+      borderRadius: 6, borderSkipped: false,
+    }]
+  },
+  options: {
+    indexAxis: 'y', responsive: true, maintainAspectRatio: false,
+    plugins: {
+      legend: { display: false },
+      tooltip: { callbacks: {
+        label: ctx => {
+          const n = ctx.raw;
+          const mean = [90.44, 91.02, 92.41, 91.19, 92.34, 92.01, 92.12, 91.6, 93.21, 91.71, 91.89, 93.41, 92.24][ctx.dataIndex];
+          return ` ${n} 人 · 平均 ${mean}`;
+        }
+      } }
+    },
+    scales: {
+      x: { beginAtZero: true, grid: { color: '#f1f5f9' }, title: { display: true, text: '人數' } },
+      y: { grid: { display: false } }
+    }
+  }
+});
+
+// ===== Missing files doughnut =====
+new Chart(document.getElementById('chartMissing'), {
+  type: 'doughnut',
+  data: {
+    labels: ['缺 v1/sdd_v1.md (28)', '缺 v1/main.py (28)', '缺 v2/sdd_v2.md (46)', '缺 v2/main.py (45)', '缺 README.md (2)'],
+    datasets: [{
+      data: [28, 28, 46, 45, 2],
+      backgroundColor: [COLORS.red, COLORS.orange, COLORS.purple, COLORS.blue, COLORS.teal],
+      borderWidth: 3, borderColor: '#fff', hoverOffset: 8
+    }]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    plugins: {
+      legend: { position: 'bottom', labels: { padding: 10, font: { size: 10.5 } } },
+      tooltip: { callbacks: { label: ctx => ` ${ctx.label}: ${ctx.raw} 人` } }
+    },
+    cutout: '55%'
+  }
+});
+</script>
+
+</body>
+</html>

@@ -1,5 +1,6 @@
 # 生成式 AI 應用系統與工程 (AIASE 2026)
 
+<img src="http://estruyf-github.azurewebsites.net/api/VisitorHit?user=JasonLn0711&repo=TAICA_AIASE2026&countColor=%237B1E7B" alt="Visitor count"/>
 **Generative AI Application Systems and Engineering**
 
 > 國立成功大學 資訊工程研究所 ｜ 114 學年度 第 2 學期 ｜ 3 學分
@@ -20,7 +21,29 @@
 ---
 
 ## Announcement
-- 4/15 We invite the sharing from a US-based Startup [IrisGo](https://meet.bnext.com.tw/articles/view/52362?)
+
+- Final Project Announce! Check [here](https://ktchuang.github.io/TAICA_AIASE2026/homeworks/TAICA2026_FinalProject.html)
+
+- We summarize [HW3 result here](https://ktchuang.github.io/TAICA_AIASE2026/homeworks/HW3_result/). Details of each student will be checked and sent to each individual soon.
+
+- HW4 公布：Deadline 6/9 23:59 - Memory Engineering for Agents — Capture, Store, Retrieve, Inject. Details of [HW4](homeworks/HW4.md)
+
+- 5/27 We have another invited talk from Sowork.
+<img src="527_invitedtalk.png" alt="booth" width="200">
+
+- 5/20 We have another invited talk from Apache Taipei.
+<img src="520_invitedtalk.png" alt="booth" width="200">
+
+- 4/29 - 5/6 We invite the sharing from Apache Taipei Kafka team
+
+<img src="429_invitedtalk.png" alt="booth" width="200">
+<img src="506_invitedtalk.png" alt="booth" width="200">
+
+- We summarize [HW2 result here](https://ktchuang.github.io/TAICA_AIASE2026/homeworks/HW2_result/). Details of each student will be checked and sent to each individual soon.
+
+- 4/15 We invite the sharing from a US-based Startup [IrisGo](https://meet.bnext.com.tw/articles/view/52362?) 
+<img src="415_invitedtalk.png" alt="booth" width="200">
+
 - 4/8 停課一週
 - HW3 公布：Deadline 4/14 23:59 (Phase 1) and 4/21 (Phase 2) - Build Your Personal RAG — From Raw Data to Agent Skill. Details of [HW3](homeworks/HW3.md)
 - We summarize [HW1 result here](https://ktchuang.github.io/TAICA_AIASE2026/homeworks/HW1_result/). Details of each student will be checked and sent to each individual soon.
@@ -53,7 +76,7 @@ ___
 | [HW1](homeworks/HW1.md) | Markdown 創作與渲染實作 | 2026/03/10 |
 | [HW2](homeworks/HW2.md) | 規格 SDD 優化實作 (v1.0 → v2.0) | v1.0: 2026/03/20, v2.0: 2026/03/31 |
 | [HW3](homeworks/HW3.md) | Build Your Personal RAG — From Raw Data to Agent Skill | 4/14 23:59 (Phase 1) and 4/21 (Phase 2) |
-
+| [HW4](homeworks/HW4.md) | Memory Engineering for Agents — Capture, Store, Retrieve, Inject | 6/9 23:59 |
 ---
 
 ## 課程講義
@@ -65,7 +88,8 @@ ___
 | W3 | [From Agentic Product to Agentic Engineering](W3.md) — AI 時代職場衝擊與應變、Agentic Engineering 概念與實務、CLI 優先的 AI 編程工作流、Agent 架構設計（ReAct / Reflection / Multi-Agent）、Spec-Driven Development、可觀測性與防禦性設計 |
 | W5 | [Practice of Agentic Coding](W5.md) — SDLC 劇變與多代理協調、AGENTS.md 與 Context Engineering、Skill vs. Sub-Agent 架構決策、可驗證性分界線（Karpathy）、Harness Engineering 三大支柱、Claude Code 六組件實戰、RPI 工作流與 No Vibes Allowed、AI 輔助學習的成效陷阱 |
 | W6 | [Agentic Engineering and RAG](W6.md)
-
+| W7 | [Agentic Stack : Inter- and Intra-Connectivity](W7.md)
+| W8 | [Token Economy and API Cost Control](W8.md)
 ---
 
 ## 課程要求

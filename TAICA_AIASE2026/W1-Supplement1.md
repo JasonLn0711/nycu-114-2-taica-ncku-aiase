@@ -92,7 +92,7 @@ The system uses a **Update-on-Tick** strategy:
 function handleIncomingTick(tick) {
     const symbol = tick.s; // e.g., "BTCUSDT"
     const kline = tick.k;  // Kline/Candlestick data
-
+    
     const formattedData = {
         time: kline.t / 1000,
         open: parseFloat(kline.o),

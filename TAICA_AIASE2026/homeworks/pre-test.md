@@ -7,7 +7,7 @@
 
 ## Objective
 
-In this assignment, you will write and execute your **first Python program**.
+In this assignment, you will write and execute your **first Python program**.  
 The goal is to print the message:
 ```
 Hello, World!

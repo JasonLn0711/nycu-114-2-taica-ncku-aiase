@@ -260,8 +260,8 @@ For each ticker, evaluate the following three conditions:
 
 > ⚠️ **Moving averages are computed from the local SQLite database**, not fetched from the network, in order to minimize HTTP requests.
 >
-> **Prerequisite**: The user must have already populated the database using `--his_insert` before invoking `--avg_break`.
-> `check_avg_break()` does **not** validate data completeness or recency. If historical data is missing or stale, the computed averages will be incorrect and may produce false signals.
+> **Prerequisite**: The user must have already populated the database using `--his_insert` before invoking `--avg_break`.  
+> `check_avg_break()` does **not** validate data completeness or recency. If historical data is missing or stale, the computed averages will be incorrect and may produce false signals.  
 > **This is the user's responsibility.** Always run `--his_insert` before using `--avg_break`.
 
 ### 5.5 Compatible Modes
