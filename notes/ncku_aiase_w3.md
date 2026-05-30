@@ -1,3 +1,5 @@
+# TAICA AIASE W3 Note
+
 下面這份我幫你重寫成一份真正能拿來反覆讀、反覆背、反覆拿去做作業與面試的 **「一本到面試版詳細筆記」**。主體以你上傳的 **W3：From Agentic Product to Agentic Engineering** 為核心，再把課綱、HW2 的 SDD / 向下相容要求、以及前面錄音整理中提到的 **anti-DDoS、MVP、記憶體管理、地端部署、RAG、Token 控管、Prompt Injection、Rust / n8n / Mermaid** 等內容全部串成一條完整學習路線。這門課本來就不是只教 Prompt，而是要你從需求、架構、實作、部署、維運、觀測到安全，一路做出可展示的生成式 AI 系統；W3 則是整條路線的中樞轉折。
 
 ---

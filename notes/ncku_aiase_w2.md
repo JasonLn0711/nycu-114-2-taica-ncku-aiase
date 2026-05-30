@@ -1,4 +1,5 @@
-# taica_aiase_W2_note
+# TAICA AIASE W2 Note
+
 Attachments: **AIASE W2 正課主線 + W2 補充講義 + HW2 的實作與評分邏輯 + W3 對 Agentic Engineering 的延伸 + 四本書的補底地圖**。這門課的真正核心，不是「叫 AI 幫你生 code」，而是把工程師的價值從「逐行撰寫」往上推到「定義問題、設計架構、約束風險、驗證結果、承擔責任」。W2 反覆強調升維/降維、FDE/PM、Agent Architect、AI Agents、PRD/SDD、Mermaid、滾雪球開發，以及從「誰寫的」轉向「如何驗證」。
 
 ## 第 0 章：先講結論——這門課到底在訓練你什麼
