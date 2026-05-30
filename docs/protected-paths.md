@@ -28,6 +28,10 @@ intended for AI agents and future maintenance checks.
 
 ## Escalation Rule
 
+Explicit course mirror refresh is a narrow exception: if Jason asks to copy or
+refresh `../TAICA_AIASE2026/`, preserve the upstream layout exactly, exclude the
+source `.git/`, and record provenance in `docs/course-mirror.md`.
+
 If a requested change touches a protected path, pause and write down:
 
 - the exact path

@@ -22,7 +22,13 @@ Protected content includes:
 - course lecture files such as `TAICA_AIASE2026/W1.md`, `W2.md`, `W3.md`,
   `W5.md`, and `W6.md`
 - course support files such as `TAICA_AIASE2026/W2_StockHeatMap_v3.ipynb` and
-  `TAICA_AIASE2026/318_invitedtalk.png`
+  invited-talk images under `TAICA_AIASE2026/`
+
+## Course Mirror Source
+
+The course mirror is refreshed from `../TAICA_AIASE2026/` only when Jason
+explicitly asks for a source update. See [course-mirror.md](course-mirror.md)
+for provenance, imported surface, and refresh commands.
 
 ## Preferred Organization Pattern
 

@@ -36,6 +36,7 @@ For organization and readability tasks, prefer:
 - `README.md`
 - `AGENTS.md`
 - `docs/repo-map.md`
+- `docs/course-mirror.md`
 - `docs/reading-guide.md`
 - `docs/agent-handoff.md`
 - `docs/protected-paths.md`
@@ -53,6 +54,10 @@ The active final-project context is recorded in
 `final-project/README.md`. Use it as a read-only source packet. If additional
 status needs to be recorded during repo organization, create or update an
 external tracking file in `docs/` instead of modifying `final-project/`.
+
+`TAICA_AIASE2026/` is a source mirror from `../TAICA_AIASE2026/`. Refresh it
+only on explicit request, keep the upstream layout intact, and never copy the
+source `.git/` directory.
 
 ## Completion Check
 

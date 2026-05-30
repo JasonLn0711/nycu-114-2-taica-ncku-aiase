@@ -11,6 +11,7 @@ references in one place while preserving grading-sensitive paths.
 - Personal study notes: [notes/](notes/)
 - Final project planning packet: [final-project/](final-project/)
 - Repo structure and edit boundaries: [docs/repo-map.md](docs/repo-map.md)
+- Course mirror provenance: [docs/course-mirror.md](docs/course-mirror.md)
 - Human reading route: [docs/reading-guide.md](docs/reading-guide.md)
 - AI agent handoff rules: [docs/agent-handoff.md](docs/agent-handoff.md)
 - Protected-path contract: [docs/protected-paths.md](docs/protected-paths.md)
@@ -39,6 +40,9 @@ content instead of changing the protected content itself.
 - `notes/README.md` indexes Jason-facing learning notes without renaming them.
 - `scripts/check_repo_boundaries.sh` verifies that protected paths remain
   unchanged and required navigation files exist.
+
+`TAICA_AIASE2026/` is maintained as a course mirror from `../TAICA_AIASE2026/`.
+Mirror refreshes are explicit source updates, not cleanup edits.
 
 ## Boundary Check
 

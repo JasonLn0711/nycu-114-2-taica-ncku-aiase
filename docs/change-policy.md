@@ -23,6 +23,28 @@ Repo cleanup must not move, rename, rewrite, or reformat:
 - course lectures, notebooks, images, syllabus, generated homework result
   files, or any path likely to be referenced by instructor automation
 
+## Course Mirror Refresh
+
+Course mirror refresh is different from repo cleanup. It may update
+`TAICA_AIASE2026/` only when Jason explicitly asks to copy or refresh the
+upstream course checkout.
+
+Allowed mirror refresh:
+
+- copy from `../TAICA_AIASE2026/` into `TAICA_AIASE2026/`
+- exclude the source `.git/` directory
+- preserve upstream file names and directory layout
+- record provenance in `docs/course-mirror.md`
+- update external indexes under `docs/` so readers can find newly mirrored
+  weeks, homework specs, result pages, or official project specs
+
+Not allowed during mirror refresh:
+
+- rewrite course files for style
+- split or rename upstream files
+- move images, notebooks, homework result pages, or official specs
+- mix Jason-facing notes into `TAICA_AIASE2026/`
+
 ## Notes Cleanup
 
 Notes cleanup may update Jason-facing learning notes under `notes/` when the

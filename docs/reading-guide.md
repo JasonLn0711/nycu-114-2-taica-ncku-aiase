@@ -16,6 +16,10 @@ Start here:
    - [W5](../TAICA_AIASE2026/W5.md): agentic coding practice and context
      engineering
    - [W6](../TAICA_AIASE2026/W6.md): agentic engineering and RAG
+   - [W7](../TAICA_AIASE2026/W7.md): later course material from the upstream
+     mirror
+   - [W8](../TAICA_AIASE2026/W8.md): later course material from the upstream
+     mirror
 
 ## If You Are Checking Homework Requirements
 
@@ -24,9 +28,17 @@ Read the homework specs in place:
 - [HW1](../TAICA_AIASE2026/homeworks/HW1.md)
 - [HW2](../TAICA_AIASE2026/homeworks/HW2.md)
 - [HW3](../TAICA_AIASE2026/homeworks/HW3.md)
+- [HW4](../TAICA_AIASE2026/homeworks/HW4.md)
 - [Pre-test](../TAICA_AIASE2026/homeworks/pre-test.md)
+- [Official final-project HTML](../TAICA_AIASE2026/homeworks/TAICA2026_FinalProject.html)
 
 These files should remain path-stable for instructor workflows.
+
+Official result pages now mirrored in place:
+
+- [HW1 result](../TAICA_AIASE2026/homeworks/HW1_result/index.html)
+- [HW2 result](../TAICA_AIASE2026/homeworks/HW2_result/index.html)
+- [HW3 result](../TAICA_AIASE2026/homeworks/HW3_result/index.html)
 
 ## If You Are Studying Jason's Notes
 
@@ -45,6 +57,10 @@ Start with [notes/README.md](../notes/README.md), then choose by topic:
 Use [final-project/README.md](../final-project/README.md) as the source packet.
 It contains current decisions, deadlines, expected official repo shape, output
 contract notes, and immediate next actions.
+
+Use
+[TAICA_AIASE2026/homeworks/TAICA2026_FinalProject.html](../TAICA_AIASE2026/homeworks/TAICA2026_FinalProject.html)
+as the mirrored official course-facing final-project spec.
 
 For repo cleanup, do not edit files under `final-project/`. Add external
 navigation or handoff notes in `docs/` instead.
